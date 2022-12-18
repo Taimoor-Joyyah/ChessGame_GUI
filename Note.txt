@@ -1,0 +1,45 @@
+->Game structure and functions
+->Chess map structure and functions
+->Frame structure and functions (Colored Text)
+->Linked list structure and functions
+
+
+. Opening: Designed Logo
+
+. Main menu:
+Start -> start game
+Difficulty-> Select difficulty
+Help-> Help for the game, A good note, key maps info, Game element's symbol info.
+Credit-> Information about developers
+Exit-> Ask for an exit game.
+
+Game:
+Use white and black as player name.
+Start with white. White as player 1.
+On ECS-> Ask for exit to main menu.
+Use WASD for movement. And Q for selection
+Or Arrow Keys for movement and Enter for selection.
+Display White or Black win on Footer. (in capital).
+Top player 1, bottom player 2.
+
+Header: Left side current player name, Right side time passed.
+
+Footer: Warnings(In red) and current cursor location
+
+
+Frame<Chess Map<Current States<Input
+CurrentStates(Main Game Logic)
+..Input->Char key->CurrentState
+..CurrentState->CurrentPlayer, TimePassed, CurrentCell, CurrentSelectedCell, Element 2D Array ->ChessMap
+..ChessMap->Char 2D Array->Frame
+
+Easy and hard mode
+Easy mode display possible move of selected box
+
+!@#$%^&*()_+-={}:"<>?[];',./|\/*-+.\|
+
+TODO:
+* make start game logo frame(make 2 sec animation eg logo fall from top to its place)
+* press any key on logo (after animation)
+
+* make background of main menu ()
