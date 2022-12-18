@@ -115,7 +115,7 @@ void Chess::setupBoard() {
     pieces[0][1] = new Piece{WHITE, KNIGHT};
     pieces[0][2] = new Piece{WHITE, BISHOP};
     pieces[0][3] = new Piece{WHITE, QUEEN};
-    pieces[3][4] = new Piece{WHITE, KING};
+    pieces[0][4] = new Piece{WHITE, KING};
     pieces[0][5] = new Piece{WHITE, BISHOP};
     pieces[0][6] = new Piece{WHITE, KNIGHT};
     pieces[0][7] = new Piece{WHITE, ROOK};
