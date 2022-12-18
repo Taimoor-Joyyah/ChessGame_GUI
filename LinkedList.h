@@ -11,6 +11,8 @@ public:
     void insert(T value);
     void remove(T value);
     bool contains(T value) const;
+    bool isEmpty() const;
+    T removeFirst();
     T get(int index) const;
     int size() const;
 
@@ -100,6 +102,18 @@ bool LinkedList<T>::contains(T value) const {
 template<typename T>
 int LinkedList<T>::size() const {
     return count;
+}
+
+template<typename T>
+bool LinkedList<T>::isEmpty() const {
+    return count == 0;
+}
+
+template<typename T>
+T LinkedList<T>::removeFirst() {
+    T node = head->value;
+    remove(node);
+    return node;
 }
 
 #endif //CHESSGAME_LINKEDLIST_H

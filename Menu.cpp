@@ -50,16 +50,13 @@ int Menu::selectOption() {
 void Menu::setupFrame() {
     int startY = 8 - optionCount / 2;
 
-    for (int i = 0; i <= 10; ++i) {
-        for (int j = 0; j < 20; j += 2) {
-            frame.update(250, 10 + j, 5 + i);
-            frame.update(' ', 11 + j, 5 + i);
-        }
-    }
+    for (int y = 0; y <= 10; ++y)
+        for (int x = 11; x < 30; ++x)
+            frame.update(x % 2 ? 250 : 32, x, 5 + y);
 
     for (int i = 0; i < prompt.size(); ++i) {
         int startX = 20 - prompt.size() / 2;
-        frame.update(prompt[i], startX + i, startY);
+        frame.update(prompt[i], startX + 1 + i, startY);
     }
 
     for (int option = 0; option < optionCount; ++option)
@@ -76,9 +73,9 @@ void Menu::updateFrame(int currentOption, int previousOption) {
     int startXCur = 20 - curSize / 2;
     int startXPrev = 20 - prevSize / 2;
 
-    for (int x = 10; x < 29; ++x) {
+    for (int x = 11; x < 30; ++x) {
         if (x <= startXPrev || x > startXPrev + prevSize)
-            frame.update(x % 2 ? ' ' : 250, x, startY + previousOption + 2);
+            frame.update(x % 2 ? 250 : 32, x, startY + previousOption + 2);
         if (x <= startXCur || x > startXCur + curSize)
             frame.update(219, x, startY + currentOption + 2);
     }

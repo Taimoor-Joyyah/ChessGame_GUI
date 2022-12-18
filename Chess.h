@@ -11,6 +11,8 @@
 #include "Enum.h"
 #include "Location.h"
 #include "Menu.h"
+#include "Piece.h"
+#include "Rules.h"
 
 using namespace std;
 
@@ -20,8 +22,8 @@ public:
     void startGame();
 
 protected:
-    struct Piece;
     static Frame frame;
+    Piece *pieces[8][8]{};
 
     static Menu pauseMenu;
     static Menu expertMenu;
@@ -30,12 +32,11 @@ protected:
     bool expertMode = false;
     Location currentCell{3, 3};
     Color currentPlayer = WHITE;
-    LinkedList<Piece *> pieces{};
     Location selectedCell{-1, -1};
+    LinkedList<Location *> possibles{};
     time_t timePassed = 0;
 
     void setupBoard();
-    Piece *getPiece(const Location &cell);
 
     static string timeToString(int seconds);
 
@@ -46,6 +47,7 @@ protected:
     void updateTimeFrame();
     void updateCurrentCellFrame();
     void updateSelectedCellFrame();
+    void updatePossibleCellFrame();
 };
 
 
