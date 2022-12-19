@@ -37,9 +37,13 @@ protected:
     time_t timePassed = 0;
 
     void setupBoard();
+    void expert_menu();
+    bool pause_menu(time_t &startTime);
+    void move();
+    void move(const Location &from, const Location &to);
+    void changePlayer();
 
     static string timeToString(int seconds);
-
     void resetCellFrame(const Location &cell);
     void setupBoardFrame();
     void setupPiecesFrame();
@@ -48,6 +52,7 @@ protected:
     void updateCurrentCellFrame();
     void updateSelectedCellFrame();
     void updatePossibleCellFrame();
+    void updatePieceFrame(const Location &cell);
 };
 
 

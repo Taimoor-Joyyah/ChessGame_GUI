@@ -62,11 +62,7 @@ void Chess::setupBoardFrame() {
 void Chess::setupPiecesFrame() {
     for (int rank = 0; rank < 8; ++rank) {
         for (int file = 0; file < 8; ++file) {
-            Piece *piece = pieces[rank][file];
-            if (piece != nullptr) {
-                char ch = (piece->getColor() == WHITE) ? piece->getType() : piece->getType() + 32;
-                frame.update(ch, file * 4 + 6, rank * 2 + 3);
-            }
+            updatePieceFrame({rank, file});
         }
     }
 }
@@ -117,14 +113,14 @@ void Chess::updatePossibleCellFrame() {
         int ch;
         for (int x = 0; x < 3; ++x) {
             ch = frame.getChar(x + cell->file * 4 + 5, cell->rank * 2 + 2);
-            frame.update(ch == 223-256 ? 219 : 220, x + cell->file * 4 + 5, cell->rank * 2 + 2);
+            frame.update(ch == 223 - 256 ? 219 : 220, x + cell->file * 4 + 5, cell->rank * 2 + 2);
             ch = frame.getChar(x + cell->file * 4 + 5, cell->rank * 2 + 4);
-            frame.update(ch == 220-256 ? 219 : 223, x + cell->file * 4 + 5, cell->rank * 2 + 4);
+            frame.update(ch == 220 - 256 ? 219 : 223, x + cell->file * 4 + 5, cell->rank * 2 + 4);
         }
         ch = frame.getChar(cell->file * 4 + 4, cell->rank * 2 + 3);
-        frame.update(ch == 221-256 ? 219 : 222, cell->file * 4 + 4, cell->rank * 2 + 3);
+        frame.update(ch == 221 - 256 ? 219 : 222, cell->file * 4 + 4, cell->rank * 2 + 3);
         ch = frame.getChar(cell->file * 4 + 8, cell->rank * 2 + 3);
-        frame.update(ch == 222-256 ? 219 : 221, cell->file * 4 + 8, cell->rank * 2 + 3);
+        frame.update(ch == 222 - 256 ? 219 : 221, cell->file * 4 + 8, cell->rank * 2 + 3);
     }
 }
 
@@ -145,4 +141,13 @@ void Chess::resetCellFrame(const Location &cell) {
                  cell.file * 4 + 4, cell.rank * 2 + 4);
     frame.update((cell.rank == 7) ? (cell.file == 7) ? 217 : 193 : (cell.file == 7) ? 180 : 197,
                  cell.file * 4 + 8, cell.rank * 2 + 4);
+}
+
+void Chess::updatePieceFrame(const Location &cell) {
+    Piece *piece = pieces[cell.rank][cell.file];
+    if (piece != nullptr) {
+        char ch = (piece->getColor() == WHITE) ? piece->getType() : piece->getType() + 32;
+        frame.update(ch, cell.file * 4 + 6, cell.rank * 2 + 3);
+    } else
+        frame.update(32, cell.file * 4 + 6, cell.rank * 2 + 3);
 }

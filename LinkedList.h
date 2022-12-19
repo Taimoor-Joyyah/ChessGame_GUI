@@ -5,6 +5,10 @@
 #ifndef CHESSGAME_LINKEDLIST_H
 #define CHESSGAME_LINKEDLIST_H
 
+#include <stdexcept>
+
+using namespace std;
+
 template<typename T>
 class LinkedList {
 public:
@@ -14,6 +18,9 @@ public:
     bool isEmpty() const;
     T removeFirst();
     T get(int index) const;
+    T iteratorNext();
+    void iteratorReset();
+    bool isIteratorEnd() const;
     int size() const;
 
 private:
@@ -22,6 +29,8 @@ private:
     Node *head;
     Node *tail;
     int count;
+
+    Node *iterator;
 };
 
 template<typename T>
@@ -114,6 +123,25 @@ T LinkedList<T>::removeFirst() {
     T node = head->value;
     remove(node);
     return node;
+}
+
+template<typename T>
+T LinkedList<T>::iteratorNext() {
+    if (iterator == nullptr)
+        throw out_of_range("No more Object");
+    Node *node = iterator;
+    iterator = iterator->next;
+    return node->value;
+}
+
+template<typename T>
+void LinkedList<T>::iteratorReset() {
+    iterator = head;
+}
+
+template<typename T>
+bool LinkedList<T>::isIteratorEnd() const {
+    return iterator == nullptr;
 }
 
 #endif //CHESSGAME_LINKEDLIST_H

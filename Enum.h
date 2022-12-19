@@ -25,7 +25,7 @@ enum PieceType {
     BISHOP = 'B',
     KNIGHT = 'N',
     ROOK = 'R',
-    PAWN = 'P',
+    PAWN = 'W',
 };
 
 #endif //CHESSGAME_ENUM_H
