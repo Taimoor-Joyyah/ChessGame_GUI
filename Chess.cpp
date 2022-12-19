@@ -210,5 +210,8 @@ void Chess::expert_menu() {
             possibles.iteratorReset();
             while (!possibles.isIteratorEnd())
                 resetCellFrame(*possibles.iteratorNext());
+            if (selectedCell.rank != -1)
+                updateSelectedCellFrame();
+            updateCurrentCellFrame();
     }
 }
