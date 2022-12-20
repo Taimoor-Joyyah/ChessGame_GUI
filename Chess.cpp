@@ -26,6 +26,7 @@ Menu Chess::quitMenu{
                 "Yes"
         },
         2,
+        true,
         &frame
 };
 
@@ -38,6 +39,7 @@ Menu Chess::pauseMenu{
                 "Quit"
         },
         4,
+        true,
         &frame
 };
 
@@ -50,6 +52,7 @@ Menu Chess::promotionMenu{
                 "Knight"
         },
         4,
+        false,
         &frame
 };
 
@@ -60,8 +63,11 @@ Menu Chess::expertMenu{
                 "Yes"
         },
         2,
+        true,
         &frame
 };
+
+Popup Chess::help{"../Help.txt"};
 
 void Chess::setupBoard() {
     pieces[0][0] = new Piece{WHITE, ROOK};
@@ -257,13 +263,13 @@ bool Chess::pause_menu(time_t &startTime) {
                 expert_menu();
                 break;
             case 2:
-                //... TODO: HELP
+                help.pop();
                 break;
             case 3:
                 if (quitMenu.selectOption() == 1)
                     return false;
         }
-    } while (option != 0);
+    } while (option != 0 && option != -1);
     startTime += time(nullptr) - delay;
     return true;
 }

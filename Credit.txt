@@ -1,0 +1,31 @@
+CHESS GAME
+Semester Project
+
+COMSATS University
+Lahore Campus
+
+GROUP MEMBERS
+Muhammad Taimoor (FA21-BSE-134)
+Tabarak Sohail (FA21-BSE-105)
+Arsal Farooq (FA21-BSE-047)
+
+LEADER
+Muhammad Taimoor
+
+BASE CODER
+Muhammad Taimoor
+
+LOGIC BUILDER
+Muhammad Taimoor
+
+GUI PORT CODER
+Tabarak Sohail
+
+GUI DESIGNER
+Arsal Farooq
+
+HOW TO PLAY CHESS
+https://www.youtube.com/
+watch?v=OCSbzArwB10
+
+THANKS

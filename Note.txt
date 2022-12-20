@@ -55,7 +55,7 @@ PAWN (1 Point):
 +   (Promotion) if it moved to other end then it
     can be promoted to queen, rook, bishop, or
     knight as chosen.
-*   (En passant) if an opponent pawn stand aside,
++   (En passant) if an opponent pawn stand aside,
     then it can capture the pawn by moving on
     diagonal of that side.
 
@@ -78,7 +78,7 @@ QUEEN (9 Point):
 
 KING:
 +   it can move one-step in any of eight direction.
-*   (check)it cannot move to a position where it could be captured.
+*   (check) it cannot move to a position where it could be captured.
 *   (castling) once per game by a player, king can move
     two-step toward a rook and rook will move to the
     square, the king has crossed. permissible if:

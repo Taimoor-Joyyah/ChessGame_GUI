@@ -12,14 +12,15 @@ using namespace std;
 
 class Menu {
 public:
-    explicit Menu(string &&prompt, string *options, int optionCount);
-    Menu(string &&prompt, string *options, int optionCount, Frame *base);
+    Menu(string &&prompt, string *options, int optionCount, bool escapable);
+    Menu(string &&prompt, string *options, int optionCount, bool escapable, Frame *base);
     int selectOption();
 
 private:
     string prompt;
     string *options;
     int optionCount;
+    bool escapable;
     Frame frame;
     Frame *base;
 

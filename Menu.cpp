@@ -6,15 +6,14 @@
 #include "Input.h"
 #include "Enum.h"
 
-Menu::Menu(string &&prompt, string *options, int optionCount) {
-    this->base = nullptr;
-    this->prompt = prompt;
-    this->options = options;
-    this->optionCount = optionCount;
+Menu::Menu(string &&prompt, string *options, int optionCount, bool escapable)
+        : prompt(prompt), options(options), optionCount(optionCount), escapable(escapable) {
 }
 
-Menu::Menu(string &&prompt, string *options, int optionCount, Frame *base)
-        : prompt(prompt), options(options), optionCount(optionCount), base(base) {
+Menu::Menu(string &&prompt, string *options, int optionCount, bool escapable, Frame *base)
+        : Menu("", options, optionCount, escapable) {
+    this->prompt = prompt;
+    this->base = base;
 }
 
 int Menu::selectOption() {
@@ -37,6 +36,10 @@ int Menu::selectOption() {
             case Key::DOWN:
                 currentOption = (currentOption + 1) % optionCount;
                 break;
+            case Key::ESC:
+                if (escapable) {
+                    return -1;
+                }
             default:
                 continue;
         }

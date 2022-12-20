@@ -1,0 +1,45 @@
+HELP
+Use arrow up and down to scroll
+press NUM 5 or ESC to exit.
+
+CHESS GAME
+
+Wikipedia
+https://en.wikipedia.org/wiki/Chess
+
+CONTROLS
+Use NUMPAD arrows for movement and
+NUM 5 for selection
+Use ESC for pause menu during game
+
+GAME
+The game is dual player game
+{white and black}.
+White on top of board with upper
+and back on bottom of board wilh
+lower letters.
+White plays first.
+
+PIECE SYMBOLS
+K - King
+Q - Queen
+B - Bishop
+N - Knight
+R - Rook
+W - Pawn
+
+EXPERT MODE
+Expert mode removes the indication
+of possible moves on the board
+
+BENEFITS
+Improves cognitive skills (including
+concentration, pattern recognition,
+decision-making, algebraic and
+geometric thinking, problem-solving,
+spatial reasoning, and critical
+thinking) Improves self-confidence
+and self-worth. Increases attention
+span. Increases memory capacity.
+
+THANKS

@@ -11,6 +11,7 @@
 #include "Enum.h"
 #include "Location.h"
 #include "Menu.h"
+#include "Popup.h"
 #include "Piece.h"
 
 using namespace std;
@@ -30,6 +31,7 @@ private:
     static Menu expertMenu;
     static Menu quitMenu;
     static Menu promotionMenu;
+    static Popup help;
     bool expertMode = false;
 
     Location currentCell{3, 3};
