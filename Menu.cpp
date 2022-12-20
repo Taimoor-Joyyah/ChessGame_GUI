@@ -48,35 +48,48 @@ int Menu::selectOption() {
 }
 
 void Menu::setupFrame() {
-    int startY = 8 - optionCount / 2;
-
-    for (int y = 0; y <= 10; ++y)
+    for (int y = 5; y <= 15; ++y)
         for (int x = 11; x < 30; ++x)
-            frame.update(x % 2 ? 250 : 32, x, 5 + y);
+            frame.update(x % 2 ? 250 : 32, x, y);
 
     for (int i = 0; i < prompt.size(); ++i) {
         int startX = 20 - prompt.size() / 2;
-        frame.update(prompt[i], startX + 1 + i, startY);
+        frame.update(prompt[i], startX + 1 + i, 6);
     }
 
     for (int option = 0; option < optionCount; ++option)
         for (int i = 0; i < options[option].size(); ++i) {
             int startX = 20 - options[option].size() / 2;
-            frame.update(options[option][i], startX + 1 + i, startY + option + 2);
+            frame.update(options[option][i], startX + 1 + i, option + 8);
         }
+
+    for (int x = 11; x < 30; ++x) {
+        frame.update(205, x, 5);
+        frame.update(205, x, 15);
+    }
+
+    for (int y = 5; y <= 15; ++y) {
+        frame.update(186, 11, y);
+        frame.update(186, 29, y);
+    }
+
+    frame.update(201, 11, 5);
+    frame.update(187, 29, 5);
+    frame.update(200, 11, 15);
+    frame.update(188, 29, 15);
 }
 
 void Menu::updateFrame(int currentOption, int previousOption) {
-    int startY = 8 - optionCount / 2;
     int curSize = options[currentOption].size();
     int prevSize = options[previousOption].size();
-    int startXCur = 20 - curSize / 2;
-    int startXPrev = 20 - prevSize / 2;
 
-    for (int x = 11; x < 30; ++x) {
+    for (int x = 12; x < 29; ++x) {
+        int startXPrev = 20 - prevSize / 2;
         if (x <= startXPrev || x > startXPrev + prevSize)
-            frame.update(x % 2 ? 250 : 32, x, startY + previousOption + 2);
+            frame.update(x % 2 ? 250 : 32, x, previousOption + 8);
+
+        int startXCur = 20 - curSize / 2;
         if (x <= startXCur || x > startXCur + curSize)
-            frame.update(219, x, startY + currentOption + 2);
+            frame.update(219, x, currentOption + 8);
     }
 }
