@@ -23,7 +23,7 @@ enum PieceType {
     KING = 'K',
     QUEEN = 'Q',
     BISHOP = 'B',
-    KNIGHT = 'N',
+    KNIGHT = 'H', //Horses
     ROOK = 'R',
     PAWN = 'W',
 };

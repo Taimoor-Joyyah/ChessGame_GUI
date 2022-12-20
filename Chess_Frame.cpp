@@ -79,6 +79,20 @@ void Chess::updateTimeFrame() {
         frame.update(timeString[i], i + Frame::FRAME_X - 12, 1);
 }
 
+void Chess::updatePointsFrame() {
+    stringstream  stream;
+    stream << "W>";
+    stream << whitePoints / 10;
+    stream << whitePoints % 10;
+    stream << '-';
+    stream << blackPoints / 10;
+    stream << blackPoints % 10;
+    stream << "<B";
+    string points = stream.str();
+    for (int i = 0; i < 9; ++i)
+        frame.update(points[i], i + Frame::FRAME_X - 25, 1);
+}
+
 void Chess::updateCurrentCellFrame() {
     for (int x = 0; x < 3; ++x) {
         frame.update(205, x + currentCell.file * 4 + 5, currentCell.rank * 2 + 2);
@@ -108,8 +122,8 @@ void Chess::updateSelectedCellFrame() {
 }
 
 void Chess::updatePossibleCellFrame() {
-    for (int i = 0; i < possibles.size(); ++i) {
-        Location *cell = possibles.get(i);
+    for (int i = 0; i < selectedPossibles.size(); ++i) {
+        Location *cell = selectedPossibles.get(i);
         int ch;
         for (int x = 0; x < 3; ++x) {
             ch = frame.getChar(x + cell->file * 4 + 5, cell->rank * 2 + 2);

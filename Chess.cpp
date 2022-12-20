@@ -2,6 +2,7 @@
 // Created by J-Bros on 12/17/2022.
 //
 
+#include <cmath>
 #include <ctime>
 #include "Chess.h"
 #include "Input.h"
@@ -13,6 +14,7 @@ Chess::Chess() {
     setupBoardFrame();
     setupPiecesFrame();
     updateTimeFrame();
+    updatePointsFrame();
     updatePlayerFrame();
     updateCurrentCellFrame();
 }
@@ -34,6 +36,18 @@ Menu Chess::pauseMenu{
                 "Expert Mode",
                 "Help",
                 "Quit"
+        },
+        4,
+        &frame
+};
+
+Menu Chess::promotionMenu{
+        "PROMOTION",
+        new string[]{
+                "Queen",
+                "Rook",
+                "Bishop",
+                "Knight"
         },
         4,
         &frame
@@ -103,29 +117,29 @@ void Chess::startGame() {
                 case Key::SELECT:
                     if (selectedCell.equal(currentCell)) {
                         selectedCell.set(-1, -1);
-                        while (!possibles.isEmpty())
-                            resetCellFrame(*possibles.removeFirst());
+                        while (!selectedPossibles.isEmpty())
+                            resetCellFrame(*selectedPossibles.removeFirst());
 
                     } else {
                         Piece *piece = pieces[currentCell.rank][currentCell.file];
                         if (piece != nullptr && piece->getColor() == currentPlayer) {
                             if (selectedCell.rank != -1) {
                                 resetCellFrame(selectedCell);
-                                while (!possibles.isEmpty())
-                                    resetCellFrame(*possibles.removeFirst());
+                                while (!selectedPossibles.isEmpty())
+                                    resetCellFrame(*selectedPossibles.removeFirst());
                             }
                             selectedCell.set(currentCell.rank, currentCell.file);
-                            Rules::possibleMoves(selectedCell, pieces, possibles);
+                            possibleMoves(selectedCell, selectedPossibles);
                         } else {
-                            possibles.iteratorReset();
-                            while (!possibles.isIteratorEnd()) {
-                                Location *location = possibles.iteratorNext();
+                            selectedPossibles.iteratorReset();
+                            while (!selectedPossibles.isIteratorEnd()) {
+                                Location *location = selectedPossibles.iteratorNext();
                                 if (currentCell.equal(*location)) {
                                     move();
                                     resetCellFrame(selectedCell);
                                     selectedCell.set(-1, -1);
-                                    while (!possibles.isEmpty())
-                                        resetCellFrame(*possibles.removeFirst());
+                                    while (!selectedPossibles.isEmpty())
+                                        resetCellFrame(*selectedPossibles.removeFirst());
                                     changePlayer();
                                     break;
                                 }
@@ -140,7 +154,7 @@ void Chess::startGame() {
                 default:
                     continue;
             }
-            if (!expertMode && !possibles.isEmpty())
+            if (!expertMode && !selectedPossibles.isEmpty())
                 updatePossibleCellFrame();
             if (selectedCell.rank != -1)
                 updateSelectedCellFrame();
@@ -159,23 +173,77 @@ void Chess::startGame() {
 
 void Chess::move() {
     move(selectedCell, currentCell);
-    updatePieceFrame(selectedCell);
-    updatePieceFrame(currentCell);
 }
 
 void Chess::move(const Location &from, const Location &to) {
     Piece *fromPiece = pieces[from.rank][from.file];
     Piece *toPiece = pieces[to.rank][to.file];
 
+    if (fromPiece->getType() == PAWN) {
+        if ((fromPiece->getColor() == WHITE) ? to.rank == 7 : to.rank == 0) {
+            switch (promotionMenu.selectOption()) {
+                case 0:
+                    fromPiece->setType(QUEEN);
+                    break;
+                case 1:
+                    fromPiece->setType(ROOK);
+                    break;
+                case 2:
+                    fromPiece->setType(BISHOP);
+                    break;
+                case 3:
+                    fromPiece->setType(KNIGHT);
+            }
+        }
+
+        if ((fromPiece->getColor() == WHITE) ?
+            from.rank == 1 && to.rank == 3 : from.rank == 6 && to.rank == 4) {
+            enPassantSession = session;
+            enPassantTo.set(to.rank, to.file);
+        }
+
+        if (session == enPassantSession + 1) {
+            int rank = fromPiece->getColor() == WHITE ? to.rank - 1 : to.rank + 1;
+            if (enPassantTo.equal({rank , to.file})) {
+                pieces[enPassantTo.rank][enPassantTo.file] = nullptr;
+                updatePieceFrame(enPassantTo);
+                enPassantTo.set(-1, -1);
+                enPassantSession = -1;
+                ((currentPlayer == WHITE) ? whitePoints : blackPoints) += 1;
+            }
+        }
+    }
+
+    if (toPiece != nullptr)
+        switch (toPiece->getType()) {
+            case QUEEN:
+                ((currentPlayer == WHITE) ? whitePoints : blackPoints) += 9;
+                break;
+            case BISHOP:
+            case KNIGHT:
+                ((currentPlayer == WHITE) ? whitePoints : blackPoints) += 3;
+                break;
+            case ROOK:
+                ((currentPlayer == WHITE) ? whitePoints : blackPoints) += 5;
+                break;
+            case PAWN:
+                ((currentPlayer == WHITE) ? whitePoints : blackPoints) += 1;
+                break;
+        }
+
     pieces[from.rank][from.file] = nullptr;
     pieces[to.rank][to.file] = fromPiece;
 
+    updatePieceFrame(from);
+    updatePieceFrame(to);
+    updatePointsFrame();
     delete toPiece;
 }
 
 void Chess::changePlayer() {
     currentPlayer = currentPlayer == WHITE ? BLACK : WHITE;
     currentCell.set(3, 3);
+    ++session;
     updatePlayerFrame();
 }
 
@@ -207,9 +275,9 @@ void Chess::expert_menu() {
             break;
         case 1:
             expertMode = true;
-            possibles.iteratorReset();
-            while (!possibles.isIteratorEnd())
-                resetCellFrame(*possibles.iteratorNext());
+            selectedPossibles.iteratorReset();
+            while (!selectedPossibles.isIteratorEnd())
+                resetCellFrame(*selectedPossibles.iteratorNext());
             if (selectedCell.rank != -1)
                 updateSelectedCellFrame();
             updateCurrentCellFrame();

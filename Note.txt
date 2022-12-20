@@ -44,15 +44,45 @@ TODO:
 
 * make background of main menu ()
 
-rank = 4
-5 6 7 - 3 2 1 0
-2 1
-1 2
--2 -1
--1 -2
--2 1
+Rules:
 
-2 1
-2 -1
-1 2
-1 -2
+PAWN (1 Point):
++   it can move one-step forward.
++   it cannot leap over any piece.
++   it can move two-step forward on its first move
++   if on its any diagonal is an opponent piece
+    than it can capture it.
++   (Promotion) if it moved to other end then it
+    can be promoted to queen, rook, bishop, or
+    knight as chosen.
+*   (En passant) if an opponent pawn stand aside,
+    then it can capture the pawn by moving on
+    diagonal of that side.
+
+KNIGHT (3 Point):
++   it can move in L-Shape on any of eight selectedPossibles.
++   it can leap over any piece.
+
+BISHOP (3 Point):
++   it can move any step on its diagonals front or back.
++   it cannot leap over any piece.
+
+ROOK (5 Point):
++   it can move any step straight on any direction.
++   it cannot leap over any piece.
+
+QUEEN (9 Point):
++   it can move any step in any direction combined of
+    bishop and rook.
++   it cannot leap over any piece.
+
+KING:
++   it can move one-step in any of eight direction.
+*   (check)it cannot move to a position where it could be captured.
+*   (castling) once per game by a player, king can move
+    two-step toward a rook and rook will move to the
+    square, the king has crossed. permissible if:
+    - if king and that rook hasn't previously moved.
+    - if there is no piece between them.
+    - if king in not checked, and does not pass through or land
+    on any square where it can be captured.

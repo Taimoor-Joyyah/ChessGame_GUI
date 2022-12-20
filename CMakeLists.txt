@@ -13,6 +13,6 @@ set(CMAKE_CXX_STANDARD 20)
 #include_directories(${SDL2_INCLUDE_DIR})
 #link_directories(${SDL2_LIB_DIR})
 
-add_executable(ChessGame main.cpp LinkedList.h Input.cpp Input.h Frame.cpp Frame.h Menu.cpp Menu.h Chess.cpp Chess.h Enum.h Location.cpp Location.h Rules.cpp Rules.h Piece.cpp Piece.h Chess_Frame.cpp)
+add_executable(ChessGame main.cpp LinkedList.h Input.cpp Input.h Frame.cpp Frame.h Menu.cpp Menu.h Chess.cpp Chess.h Enum.h Location.cpp Location.h Piece.cpp Piece.h Chess_Frame.cpp Chess_Rules.cpp)
 
 #target_link_libraries(${PROJECT_NAME} SDL2main SDL2)

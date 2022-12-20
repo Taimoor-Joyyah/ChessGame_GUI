@@ -13,3 +13,7 @@ Color Piece::getColor() const {
 PieceType Piece::getType() const {
     return type;
 }
+
+void Piece::setType(PieceType type) {
+    this->type = type;
+}

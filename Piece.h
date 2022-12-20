@@ -16,6 +16,8 @@ public:
 
     PieceType getType() const;
 
+    void setType(PieceType type);
+
 private:
     Color color;
     PieceType type;
