@@ -5,7 +5,6 @@
 #include <cmath>
 #include <ctime>
 #include "Chess.h"
-#include "Input.h"
 
 Frame Chess::frame{};
 
@@ -75,10 +74,20 @@ Menu Chess::expertMenu{
 
 Popup Chess::help{"../Help.txt"};
 
+Ending Chess::checkmate{
+        new string[]{"WIN", "CHECKMATE"},
+        2, &frame
+};
+Ending Chess::stalemate{
+        new string[]{"DRAW", "STALEMATE"},
+        2, &frame
+};
+Ending Chess::deadPositions{
+        new string[]{"DRAW", "DEAD POSITIONS"},
+        2, &frame
+};
+
 void Chess::setupBoard() {
-//    pieces[2][4] = new Piece{WHITE, KING};
-//    pieces[6][3] = new Piece{BLACK, ROOK};
-//    pieces[2][3] = new Piece{BLACK, PAWN};
     pieces[0][0] = new Piece{WHITE, ROOK};
     pieces[0][1] = new Piece{WHITE, KNIGHT};
     pieces[0][2] = new Piece{WHITE, BISHOP};
@@ -105,7 +114,8 @@ void Chess::setupBoard() {
 
 void Chess::startGame() {
     frame.updateDisplay();
-    setCheckPossibles();
+    getAllLegalMoves(currentPlayer == WHITE ? BLACK : WHITE, opponentLegalMoves, playerLegalMoves, true);
+    getAllLegalMoves(currentPlayer, playerLegalMoves, opponentLegalMoves, false);
     time_t startTime = time(nullptr);
     int key;
     do {
@@ -130,17 +140,25 @@ void Chess::startGame() {
                     resetCellFrame(currentCell);
                     currentCell.file = (currentCell.file + 1) % 8;
                     break;
+                case Key::DEBUG:
+                    updateDebug();
                 case Key::SELECT: {
                     if (selectedCell != currentCell) {
                         Piece *piece = pieces[currentCell.rank][currentCell.file];
-                        if (selectedPossibles.contains(&currentCell)) {
+                        if (selectedLegalMoves.contains(&currentCell)) {
                             move();
                             clearSelected();
-                            changePlayer();
-                        } else if (piece != nullptr && piece->getColor() == currentPlayer && (!isCheck(currentPlayer) || piece->getType() == KING)) {
+                            if (!changePlayer())
+                                return;
+                        } else if (piece != nullptr && piece->getColor() == currentPlayer) {
                             clearSelected();
                             selectedCell.set(currentCell.rank, currentCell.file);
-                            possibleMoves(selectedCell, selectedPossibles);
+                            possibleMoves(selectedCell, selectedLegalMoves, opponentLegalMoves, false);
+                            if (isCheck(currentPlayer))
+                                selectedLegalMoves.intersect(playerLegalMoves);
+                        } else {
+                            if (!selectedLegalMoves.isEmpty())
+                                clearSelected();
                         }
                     } else
                         clearSelected();
@@ -153,8 +171,8 @@ void Chess::startGame() {
                 default:
                     continue;
             }
-            if (!expertMode && !selectedPossibles.isEmpty())
-                updatePossibleCellFrame();
+            if (!expertMode && !selectedLegalMoves.isEmpty())
+                updatePossibleCellFrame(selectedLegalMoves);
             if (selectedCell.rank != -1)
                 updateSelectedCellFrame();
             updateCurrentCellFrame();
@@ -174,8 +192,12 @@ void Chess::clearSelected() {
     if (selectedCell.rank != -1)
         resetCellFrame(selectedCell);
     selectedCell.set(-1, -1);
-    while (!selectedPossibles.isEmpty())
-        resetCellFrame(*selectedPossibles.removeFirst());
+    clearPossibles(selectedLegalMoves);
+}
+
+void Chess::clearPossibles(LinkedList<Location *> &allMoves) {
+    while (!allMoves.isEmpty())
+        resetCellFrame(*allMoves.removeFirst());
 }
 
 void Chess::move() {
@@ -262,12 +284,12 @@ void Chess::move(const Location &from, const Location &to) {
     delete toPiece;
 }
 
-void Chess::changePlayer() {
+bool Chess::changePlayer() {
     currentPlayer = currentPlayer == WHITE ? BLACK : WHITE;
     currentCell.set(3, 3);
     ++session;
-    updateStatus();
     updatePlayerFrame();
+    return updateStatus();
 }
 
 Location *Chess::getKingLocation(Color player) {
@@ -281,25 +303,60 @@ Location *Chess::getKingLocation(Color player) {
     return nullptr;
 }
 
-void Chess::updateStatus() {
-    checkPossibles = LinkedList<Location *>{};
-    setCheckPossibles();
+bool Chess::updateStatus() {
+    opponentLegalMoves.clear();
+    getAllLegalMoves(currentPlayer == WHITE ? BLACK : WHITE, opponentLegalMoves, playerLegalMoves, true);
+    playerLegalMoves.clear();
+    getAllLegalMoves(currentPlayer, playerLegalMoves, opponentLegalMoves, false);
 
     Location *king = getKingLocation(currentPlayer);
     LinkedList<Location *> list{};
-    possibleMoves(*king, list);
+    possibleMoves(*king, list, opponentLegalMoves, false);
 
-    if (list.isEmpty()) {
+    //...TODO:WORKING
+    if (isCheck(currentPlayer)) {
+        for (int rank = 0; rank < 8; ++rank) {
+            for (int file = 0; file < 8; ++file) {
+                Piece *piece = pieces[rank][file];
+                if (piece != nullptr && piece->getColor() != currentPlayer) {
+                    LinkedList<Location *> l{};
+                    possibleMoves({rank, file}, l, playerLegalMoves, true);
+                    if (l.contains(getKingLocation(currentPlayer))) {
+                        for (int r = 0; r < 8; ++r) {
+                            for (int f = 0; f < 8; ++f) {
+                                Piece *p = pieces[r][f];
+                                if (p != nullptr && p->getColor() == currentPlayer) {
+                                    LinkedList<Location *> inList{};
+                                    possibleMoves({r, f}, inList, opponentLegalMoves, false);
+                                    inList.intersect(l);
+                                    inList.iteratorReset();
+                                    while (!inList.isIteratorEnd())
+                                        list.insert(inList.iteratorNext());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        playerLegalMoves.intersect(list);
+    }
+
+    if (playerLegalMoves.isEmpty()) {
         if (isCheck(currentPlayer)) {
-            // TODO: Checkmate (Other Player WIN)
-        } else if (isOnlyKing(currentPlayer)) {
-            // TODO: Stalemate (DRAW)
+            checkmate.pop();
+            return false;
+        } else {
+            stalemate.pop();
+            return false;
         }
     }
 
     if (isOnlyKing(WHITE) && isOnlyKing(BLACK)) {
-        // TODO: Dead Positions (DRAW)
+        deadPositions.pop();
+        return false;
     }
+    return true;
 }
 
 bool Chess::pause_menu(time_t &startTime) {
@@ -330,9 +387,7 @@ void Chess::expert_menu() {
             break;
         case 1:
             expertMode = true;
-            selectedPossibles.iteratorReset();
-            while (!selectedPossibles.isIteratorEnd())
-                resetCellFrame(*selectedPossibles.iteratorNext());
+            cleanPossiblesFrame(selectedLegalMoves);
             if (selectedCell.rank != -1)
                 updateSelectedCellFrame();
             updateCurrentCellFrame();

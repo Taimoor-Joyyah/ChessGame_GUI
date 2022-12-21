@@ -4,7 +4,8 @@
 
 #include "Chess.h"
 
-void Chess::possibleMoves(const Location &cell, LinkedList<Location *> &possibles, bool isChecking) {
+void Chess::possibleMoves(const Location &cell, LinkedList<Location *> &possibles, LinkedList<Location *> &legalMoves,
+                          bool isChecking) {
     Piece *currentPiece = pieces[cell.rank][cell.file];
     switch (currentPiece->getType()) {
         case ROOK:
@@ -20,24 +21,30 @@ void Chess::possibleMoves(const Location &cell, LinkedList<Location *> &possible
         case KING: {
             for (int rank = cell.rank - 1; rank <= cell.rank + 1; ++rank)
                 for (int file = cell.file - 1; file <= cell.file + 1; ++file) {
-                    if (!checkPossibles.contains(new Location{rank, file}))
-                        addLocation(rank, file, currentPiece, possibles, false, isChecking);
+                    if (rank != 0 || file != 0){
+                        if (isChecking || !legalMoves.contains(new Location{rank, file}))
+                            addLocation(rank, file, currentPiece, possibles, isChecking, isChecking);
+                    }
                 }
-            int castlingKingIndex = (currentPiece->getColor() == WHITE) ? 1 : 4;
-            if (!castlingRule[castlingKingIndex]) {
-                if (!checkPossibles.contains(new Location{cell.rank, cell.file})) {
-                    for (int i = 0; i < 2; ++i) {
-                        if (!castlingRule[castlingKingIndex + (i == 0 ? -1 : 1)]) {
-                            bool empty = true;
-                            for (int j = (i == 0 ? 1 : 5); j <= (i == 0 ? 3 : 6); ++j) {
-                                if (pieces[cell.rank][j] != nullptr)
-                                    empty = false;
-                            }
-                            if (empty)
-                                if (!checkPossibles.contains(new Location{cell.rank, cell.file - 1 + (2 * i)}) &&
-                                    !checkPossibles.contains(new Location{cell.rank, cell.file - 2 + (4 * i)})) {
-                                    possibles.insert(new Location{cell.rank, i * 7});
+            if (!isChecking) {
+                int castlingKingIndex = (currentPiece->getColor() == WHITE) ? 1 : 4;
+                if (!castlingRule[castlingKingIndex]) {
+                    if (!opponentLegalMoves.contains(new Location{cell.rank, cell.file})) {
+                        for (int i = 0; i < 2; ++i) {
+                            if (!castlingRule[castlingKingIndex + (i == 0 ? -1 : 1)]) {
+                                bool empty = true;
+                                for (int j = (i == 0 ? 1 : 5); j <= (i == 0 ? 3 : 6); ++j) {
+                                    if (pieces[cell.rank][j] != nullptr)
+                                        empty = false;
                                 }
+                                if (empty)
+                                    if (!opponentLegalMoves.contains(
+                                            new Location{cell.rank, cell.file - 1 + (2 * i)}) &&
+                                        !opponentLegalMoves.contains(
+                                                new Location{cell.rank, cell.file - 2 + (4 * i)})) {
+                                        possibles.insert(new Location{cell.rank, i * 7});
+                                    }
+                            }
                         }
                     }
                 }
@@ -48,7 +55,7 @@ void Chess::possibleMoves(const Location &cell, LinkedList<Location *> &possible
             for (int rank = cell.rank - 2; rank <= cell.rank + 2; ++rank)
                 for (int file = cell.file - 2; file <= cell.file + 2; ++file)
                     if (rank != cell.rank && file != cell.file && abs(cell.rank - rank) != abs(cell.file - file))
-                        addLocation(rank, file, currentPiece, possibles, false, true);
+                        addLocation(rank, file, currentPiece, possibles, isChecking, true);
             break;
         case PAWN: {
             int type = currentPiece->getColor() == WHITE ? 1 : -1;
@@ -105,8 +112,7 @@ void Chess::addDiagonal(const Location &cell, LinkedList<Location *> &possibles,
          rank >= 0 && file >= 0 && addLocation(rank, file, currentPiece, possibles, isChecking); --rank, --file);
 }
 
-bool
-Chess::addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isChecking,
+bool Chess::addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isChecking,
                    bool couldLeap) {
     if (file >= 0 && file <= 7 && rank >= 0 && rank <= 7) {
         Piece *piece = pieces[rank][file];
@@ -120,21 +126,22 @@ Chess::addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Loc
     return true;
 }
 
-void Chess::setCheckPossibles() {
+void Chess::getAllLegalMoves(Color player, LinkedList<Location *> &allMoves, LinkedList<Location *> &checkMoves,
+                             bool isChecking) {
     for (int rank = 0; rank < 8; ++rank) {
         for (int file = 0; file < 8; ++file) {
             Piece *piece = pieces[rank][file];
-            if (piece != nullptr && piece->getColor() != currentPlayer) {
+            if (piece != nullptr && piece->getColor() == player) {
                 LinkedList<Location *> list{};
-                possibleMoves({rank, file}, list, true);
-                checkPossibles.merge(list);
+                possibleMoves({rank, file}, list, checkMoves, isChecking);
+                allMoves.merge(list);
             }
         }
     }
 }
 
 bool Chess::isCheck(Color player) {
-    return checkPossibles.contains(getKingLocation(player));
+    return opponentLegalMoves.contains(getKingLocation(player));
 }
 
 bool Chess::isOnlyKing(Color player) {

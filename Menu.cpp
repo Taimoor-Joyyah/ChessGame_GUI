@@ -66,20 +66,7 @@ void Menu::setupFrame() {
             frame.update(options[option][i], startX + 1 + i, option + 8);
         }
 
-    for (int x = 11; x < 30; ++x) {
-        frame.update(205, x, 5);
-        frame.update(205, x, 15);
-    }
-
-    for (int y = 5; y <= 15; ++y) {
-        frame.update(186, 11, y);
-        frame.update(186, 29, y);
-    }
-
-    frame.update(201, 11, 5);
-    frame.update(187, 29, 5);
-    frame.update(200, 11, 15);
-    frame.update(188, 29, 15);
+    frame.createRectangle(11, 29, 5, 15);
 }
 
 void Menu::updateFrame(int currentOption, int previousOption) {

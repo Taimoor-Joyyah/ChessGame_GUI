@@ -13,6 +13,8 @@
 #include "Menu.h"
 #include "Popup.h"
 #include "Piece.h"
+#include "Input.h"
+#include "Ending.h"
 
 using namespace std;
 
@@ -34,12 +36,15 @@ private:
     static Menu quitMenu;
     static Menu promotionMenu;
     static Popup help;
+    static Ending checkmate;
+    static Ending stalemate;
+    static Ending deadPositions;
     bool expertMode = false;
 
     Location currentCell{3, 3};
     Color currentPlayer = WHITE;
     Location selectedCell{-1, -1};
-    LinkedList<Location *> selectedPossibles{}; //legalMoves
+    LinkedList<Location *> selectedLegalMoves{};
     time_t timePassed = 0;
     int session = 0;
 
@@ -51,8 +56,11 @@ private:
 
     bool castlingRule[6]{};// wlR, wK, wrR, blR, bK, brR // hasMoved
 
-    LinkedList<Location *> checkPossibles{};//opponentLegalMoves
+    LinkedList<Location *> opponentLegalMoves{};
+    LinkedList<Location *> playerLegalMoves{};
     Location *getKingLocation(Color player);
+
+    int debugState = 0;
 
     void setupBoard();
 
@@ -66,7 +74,7 @@ private:
 
     void clearSelected();
 
-    void changePlayer();
+    bool changePlayer();
 
     // Rules Functions
 
@@ -74,9 +82,11 @@ private:
 
     bool isCheck(Color player);
 
-    void setCheckPossibles();
+    void getAllLegalMoves(Color player, LinkedList<Location *> &allMoves, LinkedList<Location *> &checkMoves,
+                          bool isChecking);
 
-    void possibleMoves(const Location &cell, LinkedList<Location *> &possibles, bool isChecking = false);
+    void possibleMoves(const Location &cell, LinkedList<Location *> &possibles, LinkedList<Location *> &legalMoves,
+                       bool isChecking = false);
 
     void addStraight(const Location &cell, LinkedList<Location *> &possibles, bool isChecking);
 
@@ -84,6 +94,8 @@ private:
 
     bool addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isChecking,
                      bool couldLeap = false);
+
+    bool updateStatus();
 
     // Frame Functions
 
@@ -105,11 +117,15 @@ private:
 
     void updateSelectedCellFrame();
 
-    void updatePossibleCellFrame();
+    void updatePossibleCellFrame(LinkedList<Location *> &listMoves);
 
     void updatePieceFrame(const Location &cell);
 
-    void updateStatus();
+    void updateDebug();
+
+    void clearPossibles(LinkedList<Location *> &allMoves);
+
+    void cleanPossiblesFrame(LinkedList<Location *> &listMoves);
 };
 
 

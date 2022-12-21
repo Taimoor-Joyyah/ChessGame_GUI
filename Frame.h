@@ -18,10 +18,11 @@ public:
     void updateDisplay();
     void copy(Frame &other);
     void clear();
+    void createRectangle(int left, int right, int top, int bottom);
 
 private:
-
     char frame[OPTIMIZED_FRAME_SIZE]{};
+
     void setupFrame();
 };
 

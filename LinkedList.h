@@ -23,7 +23,9 @@ public:
     bool isIteratorEnd() const;
     int size() const;
     void merge(LinkedList<T> &list);
+    void intersect(LinkedList<T> &list);
     void subtract(LinkedList<T> &list);
+    void clear();
 
 private:
     struct Node;
@@ -157,6 +159,16 @@ void LinkedList<T>::merge(LinkedList<T> &list) {
 }
 
 template<typename T>
+void LinkedList<T>::intersect(LinkedList<T> &list) {
+    Node *current = list.head;
+    while (current != nullptr) {
+        if (!contains(current->value))
+            remove(current->value);
+        current = current->next;
+    }
+}
+
+template<typename T>
 void LinkedList<T>::subtract(LinkedList<T> &list) {
     Node *current = list.head;
     while (current != nullptr) {
@@ -164,6 +176,12 @@ void LinkedList<T>::subtract(LinkedList<T> &list) {
             remove(current->value);
         current = current->next;
     }
+}
+
+template<typename T>
+void LinkedList<T>::clear() {
+    while (!isEmpty())
+        removeFirst();
 }
 
 #endif //CHESSGAME_LINKEDLIST_H

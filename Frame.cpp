@@ -29,20 +29,22 @@ void Frame::setupFrame() {
     }
     update('\0', FRAME_X, FRAME_Y - 1);
 
-    for (int x = 0; x < FRAME_X; ++x) {
-        update(205, x, 0);
-        update(205, x, FRAME_Y - 1);
-    }
+    createRectangle(0, FRAME_X - 1, 0, FRAME_Y - 1);
+}
 
-    for (int y = 0; y < FRAME_Y; ++y) {
-        update(186, 0, y);
-        update(186, FRAME_X - 1, y);
+void Frame::createRectangle(int left, int right, int top, int bottom) {
+    for (int x = left; x <= right; ++x) {
+        update(205, x, top);
+        update(205, x, bottom);
     }
-
-    update(201, 0, 0);
-    update(187, FRAME_X - 1, 0);
-    update(200, 0, FRAME_Y - 1);
-    update(188, FRAME_X - 1, FRAME_Y - 1);
+    for (int y = top; y <= bottom; ++y) {
+        update(186, left, y);
+        update(186, right, y);
+    }
+    update(201, left, top);
+    update(187, right, top);
+    update(200, left, bottom);
+    update(188, right, bottom);
 }
 
 void Frame::clear() {
