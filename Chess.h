@@ -20,6 +20,8 @@ class Chess {
 public:
     Chess();
 
+    ~Chess();
+
     void startGame();
 
 private:
@@ -37,15 +39,20 @@ private:
     Location currentCell{3, 3};
     Color currentPlayer = WHITE;
     Location selectedCell{-1, -1};
-    LinkedList<Location *> selectedPossibles{};
+    LinkedList<Location *> selectedPossibles{}; //legalMoves
     time_t timePassed = 0;
     int session = 0;
+
     int whitePoints = 0;
-
     int blackPoints = 0;
-    Location enPassantTo{-1, -1};
 
+    Location enPassantTo{-1, -1};
     int enPassantSession{};
+
+    bool castlingRule[6]{};// wlR, wK, wrR, blR, bK, brR // hasMoved
+
+    LinkedList<Location *> checkPossibles{};//opponentLegalMoves
+    Location *getKingLocation(Color player);
 
     void setupBoard();
 
@@ -57,17 +64,26 @@ private:
 
     void move(const Location &from, const Location &to);
 
+    void clearSelected();
+
     void changePlayer();
 
     // Rules Functions
 
-    void possibleMoves(const Location &cell, LinkedList<Location *> &possibles);
+    bool isOnlyKing(Color player);
 
-    void addStraight(const Location &cell, LinkedList<Location *> &possibles);
+    bool isCheck(Color player);
 
-    void addDiagonal(const Location &cell, LinkedList<Location *> &possibles);
+    void setCheckPossibles();
 
-    bool addLocation(int rank, int file,const Piece *currentPiece, LinkedList<Location *> &possibles, bool couldLeap = false);
+    void possibleMoves(const Location &cell, LinkedList<Location *> &possibles, bool isChecking = false);
+
+    void addStraight(const Location &cell, LinkedList<Location *> &possibles, bool isChecking);
+
+    void addDiagonal(const Location &cell, LinkedList<Location *> &possibles, bool isChecking);
+
+    bool addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isChecking,
+                     bool couldLeap = false);
 
     // Frame Functions
 
@@ -92,6 +108,8 @@ private:
     void updatePossibleCellFrame();
 
     void updatePieceFrame(const Location &cell);
+
+    void updateStatus();
 };
 
 

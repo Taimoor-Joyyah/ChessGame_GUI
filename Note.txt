@@ -41,8 +41,8 @@ Easy mode display possible move of selected box
 TODO:
 * make start game logo frame(make 2 sec animation eg logo fall from top to its place)
 * press any key on logo (after animation)
-
 * make background of main menu ()
+* destructors
 
 Rules:
 
@@ -78,11 +78,21 @@ QUEEN (9 Point):
 
 KING:
 +   it can move one-step in any of eight direction.
-*   (check) it cannot move to a position where it could be captured.
-*   (castling) once per game by a player, king can move
++   (check) it cannot move to a position where it could be captured.
++   (castling) once per game by a player, king can move
     two-step toward a rook and rook will move to the
     square, the king has crossed. permissible if:
     - if king and that rook hasn't previously moved.
     - if there is no piece between them.
     - if king in not checked, and does not pass through or land
     on any square where it can be captured.
+
+union-subtract-clear
+in change player set pssibles
+ischeck
+if true (only select king)
+if false (any)
+if true king possibles - check possibles
+if king move not possible then checkmate other player win
+
++ while checking see if king can kill a piece which is protected

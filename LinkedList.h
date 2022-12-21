@@ -22,6 +22,8 @@ public:
     void iteratorReset();
     bool isIteratorEnd() const;
     int size() const;
+    void merge(LinkedList<T> &list);
+    void subtract(LinkedList<T> &list);
 
 private:
     struct Node;
@@ -65,7 +67,7 @@ void LinkedList<T>::remove(T value) {
     Node *current = head;
     Node *previous;
 
-    while (current->value != value) {
+    while (*current->value != *value) {
         if (current->next == nullptr)
             return;
         previous = current;
@@ -101,7 +103,7 @@ template<typename T>
 bool LinkedList<T>::contains(T value) const {
     Node *current = head;
     while(current != nullptr) {
-        if (current->value == value)
+        if (*(current->value) == *value)
             return true;
         current = current->next;
     }
@@ -142,6 +144,26 @@ void LinkedList<T>::iteratorReset() {
 template<typename T>
 bool LinkedList<T>::isIteratorEnd() const {
     return iterator == nullptr;
+}
+
+template<typename T>
+void LinkedList<T>::merge(LinkedList<T> &list) {
+    Node *current = list.head;
+    while (current != nullptr) {
+        if (!contains(current->value))
+            insert(current->value);
+        current = current->next;
+    }
+}
+
+template<typename T>
+void LinkedList<T>::subtract(LinkedList<T> &list) {
+    Node *current = list.head;
+    while (current != nullptr) {
+        if (contains(current->value))
+            remove(current->value);
+        current = current->next;
+    }
 }
 
 #endif //CHESSGAME_LINKEDLIST_H

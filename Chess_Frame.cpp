@@ -165,3 +165,4 @@ void Chess::updatePieceFrame(const Location &cell) {
     } else
         frame.update(32, cell.file * 4 + 6, cell.rank * 2 + 3);
 }
+

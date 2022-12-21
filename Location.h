@@ -12,7 +12,8 @@ public:
     int file;
 
     void set(int rank, int file);
-    bool equal(const Location &cell) const;
+    bool equals(int rank, int file);
+    bool operator==(const Location &other) const;
 };
 
 
