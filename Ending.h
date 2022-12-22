@@ -13,6 +13,7 @@ using namespace std;
 class Ending {
 public:
     Ending(const string *text, int countLine, Frame *base);
+    void setText(const string *text);
     void pop();
 
 private:

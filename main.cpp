@@ -1,7 +1,6 @@
 #include "Menu.h"
 #include "Chess.h"
 #include "Popup.h"
-#include "Ending.h"
 
 using namespace std;
 

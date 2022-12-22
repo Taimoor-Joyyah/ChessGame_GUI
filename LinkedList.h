@@ -84,7 +84,7 @@ void LinkedList<T>::remove(T value) {
         previous->next = current->next;
     }
     --count;
-    delete current;
+//    delete current;
 }
 
 template<typename T>
@@ -160,9 +160,9 @@ void LinkedList<T>::merge(LinkedList<T> &list) {
 
 template<typename T>
 void LinkedList<T>::intersect(LinkedList<T> &list) {
-    Node *current = list.head;
+    Node *current = head;
     while (current != nullptr) {
-        if (!contains(current->value))
+        if (!list.contains(current->value))
             remove(current->value);
         current = current->next;
     }

@@ -60,6 +60,8 @@ private:
     LinkedList<Location *> playerLegalMoves{};
     Location *getKingLocation(Color player);
 
+    int pieceCheckCount = 0;
+
     int debugState = 0;
 
     void setupBoard();

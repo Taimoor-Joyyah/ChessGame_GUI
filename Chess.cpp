@@ -75,7 +75,7 @@ Menu Chess::expertMenu{
 Popup Chess::help{"../Help.txt"};
 
 Ending Chess::checkmate{
-        new string[]{"WIN", "CHECKMATE"},
+        nullptr,
         2, &frame
 };
 Ending Chess::stalemate{
@@ -151,11 +151,13 @@ void Chess::startGame() {
                             if (!changePlayer())
                                 return;
                         } else if (piece != nullptr && piece->getColor() == currentPlayer) {
-                            clearSelected();
-                            selectedCell.set(currentCell.rank, currentCell.file);
-                            possibleMoves(selectedCell, selectedLegalMoves, opponentLegalMoves, false);
-                            if (isCheck(currentPlayer))
-                                selectedLegalMoves.intersect(playerLegalMoves);
+                            if (pieceCheckCount <= 1 || piece->getType() == KING) {
+                                clearSelected();
+                                selectedCell.set(currentCell.rank, currentCell.file);
+                                possibleMoves(selectedCell, selectedLegalMoves, opponentLegalMoves, false);
+                                if (isCheck(currentPlayer) && piece->getType() != KING)
+                                    selectedLegalMoves.intersect(playerLegalMoves);
+                            }
                         } else {
                             if (!selectedLegalMoves.isEmpty())
                                 clearSelected();
@@ -186,6 +188,100 @@ void Chess::startGame() {
             }
         }
     } while (true);
+}
+
+bool Chess::updateStatus() {
+    opponentLegalMoves.clear();
+    getAllLegalMoves(currentPlayer == WHITE ? BLACK : WHITE, opponentLegalMoves, playerLegalMoves, true);
+    playerLegalMoves.clear();
+    getAllLegalMoves(currentPlayer, playerLegalMoves, opponentLegalMoves, false);
+
+    Location *king = getKingLocation(currentPlayer);
+    LinkedList<Location *> checkLegalMoves{};
+
+    pieceCheckCount = 0;
+
+    //...TODO:WORKING
+    if (isCheck(currentPlayer)) {
+        for (int o_rank = 0; o_rank < 8; ++o_rank) {
+            for (int o_file = 0; o_file < 8; ++o_file) {
+                Piece *o_piece = pieces[o_rank][o_file];
+                if (o_piece != nullptr && o_piece->getColor() != currentPlayer && o_piece->getType() != KING) {
+                    LinkedList<Location *> o_list{};
+                    possibleMoves({o_rank, o_file}, o_list, playerLegalMoves, true);
+                    if (o_list.contains(getKingLocation(currentPlayer))) {
+                        ++pieceCheckCount;
+                        if (o_piece->getType() != PAWN && o_piece->getType() != KNIGHT) {
+                            o_list.remove(king);
+                            o_list.iteratorReset();
+                            while (!o_list.isIteratorEnd()) {
+                                Location *cell = o_list.iteratorNext();
+                                int king_rank_delta = king->rank - o_rank;
+                                int king_file_delta = king->file - o_file;
+                                int cell_rank_delta = cell->rank - o_rank;
+                                int cell_file_delta = cell->file - o_file;
+                                int king_rank_direction = (king_rank_delta != 0) ?
+                                                          king_rank_delta / abs(king_rank_delta) : 0;
+                                int king_file_direction = (king_file_delta != 0) ?
+                                                          king_file_delta / abs(king_file_delta) : 0;
+                                int cell_rank_direction = (cell_rank_delta != 0) ?
+                                                          cell_rank_delta / abs(cell_rank_delta) : 0;
+                                int cell_file_direction = (cell_file_delta != 0) ?
+                                                          cell_file_delta / abs(cell_file_delta) : 0;
+
+                                if (king_rank_direction != cell_rank_direction ||
+                                    king_file_direction != cell_file_direction)
+                                    o_list.remove(cell);
+                            }
+                        } else {
+                            o_list.clear();
+                        }
+                        o_list.insert(new Location{o_rank, o_file});
+                        for (int p_rank = 0; p_rank < 8; ++p_rank) {
+                            for (int p_file = 0; p_file < 8; ++p_file) {
+                                Piece *p_piece = pieces[p_rank][p_file];
+                                if (p_piece != nullptr && p_piece->getColor() == currentPlayer &&
+                                    p_piece->getType() != KING) {
+                                    LinkedList<Location *> p_list{};
+                                    possibleMoves({p_rank, p_file}, p_list, opponentLegalMoves, false);
+                                    p_list.intersect(o_list);
+
+                                    p_list.iteratorReset();
+                                    while (!p_list.isIteratorEnd()) {
+                                        Location *cell = p_list.iteratorNext();
+                                        if (!checkLegalMoves.contains(cell))
+                                            checkLegalMoves.insert(cell);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (pieceCheckCount == 1)
+            playerLegalMoves.intersect(checkLegalMoves);
+    }
+
+    LinkedList<Location *> kingLegalMoves{};
+    possibleMoves(*king, kingLegalMoves, opponentLegalMoves, false);
+
+    if (playerLegalMoves.isEmpty() && kingLegalMoves.isEmpty()) {
+        if (isCheck(currentPlayer)) {
+            checkmate.setText(new string[]{"CHECKMATE", currentPlayer == WHITE ? "BLACK WON" : "WHITE WON"});
+            checkmate.pop();
+            return false;
+        } else {
+            stalemate.pop();
+            return false;
+        }
+    }
+
+    if (isOnlyKing(WHITE) && isOnlyKing(BLACK)) {
+        deadPositions.pop();
+        return false;
+    }
+    return true;
 }
 
 void Chess::clearSelected() {
@@ -301,62 +397,6 @@ Location *Chess::getKingLocation(Color player) {
         }
     }
     return nullptr;
-}
-
-bool Chess::updateStatus() {
-    opponentLegalMoves.clear();
-    getAllLegalMoves(currentPlayer == WHITE ? BLACK : WHITE, opponentLegalMoves, playerLegalMoves, true);
-    playerLegalMoves.clear();
-    getAllLegalMoves(currentPlayer, playerLegalMoves, opponentLegalMoves, false);
-
-    Location *king = getKingLocation(currentPlayer);
-    LinkedList<Location *> list{};
-    possibleMoves(*king, list, opponentLegalMoves, false);
-
-    //...TODO:WORKING
-    if (isCheck(currentPlayer)) {
-        for (int rank = 0; rank < 8; ++rank) {
-            for (int file = 0; file < 8; ++file) {
-                Piece *piece = pieces[rank][file];
-                if (piece != nullptr && piece->getColor() != currentPlayer) {
-                    LinkedList<Location *> l{};
-                    possibleMoves({rank, file}, l, playerLegalMoves, true);
-                    if (l.contains(getKingLocation(currentPlayer))) {
-                        for (int r = 0; r < 8; ++r) {
-                            for (int f = 0; f < 8; ++f) {
-                                Piece *p = pieces[r][f];
-                                if (p != nullptr && p->getColor() == currentPlayer) {
-                                    LinkedList<Location *> inList{};
-                                    possibleMoves({r, f}, inList, opponentLegalMoves, false);
-                                    inList.intersect(l);
-                                    inList.iteratorReset();
-                                    while (!inList.isIteratorEnd())
-                                        list.insert(inList.iteratorNext());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        playerLegalMoves.intersect(list);
-    }
-
-    if (playerLegalMoves.isEmpty()) {
-        if (isCheck(currentPlayer)) {
-            checkmate.pop();
-            return false;
-        } else {
-            stalemate.pop();
-            return false;
-        }
-    }
-
-    if (isOnlyKing(WHITE) && isOnlyKing(BLACK)) {
-        deadPositions.pop();
-        return false;
-    }
-    return true;
 }
 
 bool Chess::pause_menu(time_t &startTime) {

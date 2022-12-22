@@ -31,3 +31,7 @@ void Ending::setupFrame() {
             frame.update(text[line][i], startX + 1 + i, line + 8);
         }
 }
+
+void Ending::setText(const string *text) {
+    this->text = text;
+}
