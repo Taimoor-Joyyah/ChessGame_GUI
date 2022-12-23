@@ -7,6 +7,7 @@
 
 #include "Enum.h"
 #include "Location.h"
+#include "LinkedList.h"
 
 class Piece {
 public:
@@ -16,11 +17,14 @@ public:
 
     PieceType getType() const;
 
+    const LinkedList<Location *> &getLegalMoves() const;
+
     void setType(PieceType type);
 
 private:
     Color color;
     PieceType type;
+    LinkedList<Location *> legalMoves{};
 };
 
 

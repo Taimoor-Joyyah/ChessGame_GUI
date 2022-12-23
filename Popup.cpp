@@ -43,8 +43,8 @@ void Popup::setupFrame() {
         frame.update(196, x, 1);
         frame.update(196, x, 19);
     }
-    frame.update(239, 20, 1);
-    frame.update('V', 20, 19);
+    frame.update(239, 19, 1);
+    frame.update('V', 19, 19);
 
     updateFrame(0);
 }
@@ -57,7 +57,7 @@ void Popup::updateFrame(int topLine) {
     for (int i = 0; i < statements.size() && i < 17; ++i) {
         string *statement = statements.iteratorNext();
         for (int j = 0; j < statement->size(); ++j) {
-            int startX = 20 - statement->size() / 2;
+            int startX = 19 - statement->size() / 2;
             frame.update((*statement)[j], startX + 1 + j, i + 2);
         }
     }

@@ -85,16 +85,16 @@ private:
     bool isCheck(Color player);
 
     void getAllLegalMoves(Color player, LinkedList<Location *> &allMoves, LinkedList<Location *> &checkMoves,
-                          bool isChecking);
+                          bool isSimulating);
 
     void possibleMoves(const Location &cell, LinkedList<Location *> &possibles, LinkedList<Location *> &legalMoves,
-                       bool isChecking = false);
+                       bool isSimulating = false);
 
-    void addStraight(const Location &cell, LinkedList<Location *> &possibles, bool isChecking);
+    void addStraight(const Location &cell, LinkedList<Location *> &possibles, bool isSimulating);
 
-    void addDiagonal(const Location &cell, LinkedList<Location *> &possibles, bool isChecking);
+    void addDiagonal(const Location &cell, LinkedList<Location *> &possibles, bool isSimulating);
 
-    bool addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isChecking,
+    bool addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isSimulating,
                      bool couldLeap = false);
 
     bool updateStatus();

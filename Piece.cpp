@@ -17,3 +17,7 @@ PieceType Piece::getType() const {
 void Piece::setType(PieceType type) {
     this->type = type;
 }
+
+const LinkedList<Location *> &Piece::getLegalMoves() const {
+    return legalMoves;
+}

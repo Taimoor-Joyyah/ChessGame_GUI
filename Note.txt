@@ -98,3 +98,13 @@ if king move not possible then checkmate other player win
 + while checking see if king can kill a piece which is protected
 + king cannot kill a protected piece but other piece can.
 * if a piece is protecting king from check than it cannot be moved
+
+if (checked)
+. move king to a safe square
+. protect king by a piece
+. capture attacking piece
+else
+. Do not move piece that is protecting king from check
+
+In Short, Play a move that does not put king in danger.
+So, Simulate each possible move and get legal moves.

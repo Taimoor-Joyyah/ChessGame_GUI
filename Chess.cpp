@@ -114,8 +114,7 @@ void Chess::setupBoard() {
 
 void Chess::startGame() {
     frame.updateDisplay();
-    getAllLegalMoves(currentPlayer == WHITE ? BLACK : WHITE, opponentLegalMoves, playerLegalMoves, true);
-    getAllLegalMoves(currentPlayer, playerLegalMoves, opponentLegalMoves, false);
+    updateStatus();
     time_t startTime = time(nullptr);
     int key;
     do {
@@ -188,6 +187,14 @@ void Chess::startGame() {
             }
         }
     } while (true);
+}
+
+bool Chess::changePlayer() {
+    currentPlayer = currentPlayer == WHITE ? BLACK : WHITE;
+    currentCell.set(3, 3);
+    ++session;
+    updatePlayerFrame();
+    return updateStatus();
 }
 
 bool Chess::updateStatus() {
@@ -378,14 +385,6 @@ void Chess::move(const Location &from, const Location &to) {
     updatePieceFrame(to);
     updatePointsFrame();
     delete toPiece;
-}
-
-bool Chess::changePlayer() {
-    currentPlayer = currentPlayer == WHITE ? BLACK : WHITE;
-    currentCell.set(3, 3);
-    ++session;
-    updatePlayerFrame();
-    return updateStatus();
 }
 
 Location *Chess::getKingLocation(Color player) {

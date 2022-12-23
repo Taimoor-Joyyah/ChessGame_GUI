@@ -51,22 +51,22 @@ int Menu::selectOption() {
 }
 
 void Menu::setupFrame() {
-    for (int y = 5; y <= 15; ++y)
+    for (int y = 5; y <= optionCount + 9; ++y)
         for (int x = 11; x < 30; ++x)
             frame.update(x % 2 ? 250 : 32, x, y);
 
     for (int i = 0; i < prompt.size(); ++i) {
-        int startX = 20 - prompt.size() / 2;
+        int startX = 19 - prompt.size() / 2;
         frame.update(prompt[i], startX + 1 + i, 6);
     }
 
     for (int option = 0; option < optionCount; ++option)
         for (int i = 0; i < options[option].size(); ++i) {
-            int startX = 20 - options[option].size() / 2;
+            int startX = 19 - options[option].size() / 2;
             frame.update(options[option][i], startX + 1 + i, option + 8);
         }
 
-    frame.createRectangle(11, 29, 5, 15);
+    frame.createRectangle(11, 29, 5, optionCount + 9);
 }
 
 void Menu::updateFrame(int currentOption, int previousOption) {
@@ -74,11 +74,11 @@ void Menu::updateFrame(int currentOption, int previousOption) {
     int prevSize = options[previousOption].size();
 
     for (int x = 12; x < 29; ++x) {
-        int startXPrev = 20 - prevSize / 2;
+        int startXPrev = 19 - prevSize / 2;
         if (x <= startXPrev || x > startXPrev + prevSize)
             frame.update(x % 2 ? 250 : 32, x, previousOption + 8);
 
-        int startXCur = 20 - curSize / 2;
+        int startXCur = 19 - curSize / 2;
         if (x <= startXCur || x > startXCur + curSize)
             frame.update(219, x, currentOption + 8);
     }

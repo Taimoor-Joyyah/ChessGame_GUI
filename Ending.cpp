@@ -27,7 +27,7 @@ void Ending::setupFrame() {
 
     for (int line = 0; line < countLine; ++line)
         for (int i = 0; i < text[line].size(); ++i) {
-            int startX = 20 - text[line].size() / 2;
+            int startX = 19 - text[line].size() / 2;
             frame.update(text[line][i], startX + 1 + i, line + 8);
         }
 }
