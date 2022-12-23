@@ -88,27 +88,27 @@ Ending Chess::deadPositions{
 };
 
 void Chess::setupBoard() {
-    setPiece({0,0}, new Piece{WHITE, ROOK});
-    setPiece({0,1}, new Piece{WHITE, KNIGHT});
-    setPiece({0,2}, new Piece{WHITE, BISHOP});
-    setPiece({0,3}, new Piece{WHITE, QUEEN});
-    setPiece({0,4}, new Piece{WHITE, KING});
-    setPiece({0,5}, new Piece{WHITE, BISHOP});
-    setPiece({0,6}, new Piece{WHITE, KNIGHT});
-    setPiece({0,7}, new Piece{WHITE, ROOK});
+    setPiece({0,0}, new Piece{BLACK, ROOK});
+    setPiece({0,1}, new Piece{BLACK, KNIGHT});
+    setPiece({0,2}, new Piece{BLACK, BISHOP});
+    setPiece({0,3}, new Piece{BLACK, QUEEN});
+    setPiece({0,4}, new Piece{BLACK, KING});
+    setPiece({0,5}, new Piece{BLACK, BISHOP});
+    setPiece({0,6}, new Piece{BLACK, KNIGHT});
+    setPiece({0,7}, new Piece{BLACK, ROOK});
 
-    setPiece({7,0}, new Piece{BLACK, ROOK});
-    setPiece({7,1}, new Piece{BLACK, KNIGHT});
-    setPiece({7,2}, new Piece{BLACK, BISHOP});
-    setPiece({7,3}, new Piece{BLACK, QUEEN});
-    setPiece({7,4}, new Piece{BLACK, KING});
-    setPiece({7,5}, new Piece{BLACK, BISHOP});
-    setPiece({7,6}, new Piece{BLACK, KNIGHT});
-    setPiece({7,7}, new Piece{BLACK, ROOK});
+    setPiece({7,0}, new Piece{WHITE, ROOK});
+    setPiece({7,1}, new Piece{WHITE, KNIGHT});
+    setPiece({7,2}, new Piece{WHITE, BISHOP});
+    setPiece({7,3}, new Piece{WHITE, QUEEN});
+    setPiece({7,4}, new Piece{WHITE, KING});
+    setPiece({7,5}, new Piece{WHITE, BISHOP});
+    setPiece({7,6}, new Piece{WHITE, KNIGHT});
+    setPiece({7,7}, new Piece{WHITE, ROOK});
 
     for (int i = 0; i < 8; ++i) {
-        setPiece({1,i}, new Piece{WHITE, PAWN});
-        setPiece({6,i}, new Piece{BLACK, PAWN});
+        setPiece({1,i}, new Piece{BLACK, PAWN});
+        setPiece({6,i}, new Piece{WHITE, PAWN});
     }
 }
 
@@ -230,9 +230,9 @@ bool Chess::updateStatus() {
     }
 
     bool isCheck = isCheckOn(getKingLocation(currentPlayer));
-    int castlingKingIndex = isWhite ? 1 : 4;
+    int castlingKingIndex = isWhite ? 4 : 1;
     if (!castlingRule[castlingKingIndex]) {
-        int king_rank = isWhite ? 0 : 7;
+        int king_rank = isWhite ? 7 : 0;
         if (!isCheck) {
             for (int i = -1; i <= 1; i += 2) {
                 if (!castlingRule[castlingKingIndex + i]) {
@@ -307,7 +307,7 @@ void Chess::move(Location &from, Location &to) {
         move(rook, moveTo);
     }
 
-    int castlingIndex = isWhite ? 1 : 4;
+    int castlingIndex = isWhite ? 4 : 1;
     if (fromPiece->getType() == KING)
         castlingRule[castlingIndex] = true;
     else if (fromPiece->getType() == ROOK) {
@@ -316,7 +316,7 @@ void Chess::move(Location &from, Location &to) {
     }
 
     if (fromPiece->getType() == PAWN) {
-        if (isWhite ? to.rank == 7 : to.rank == 0) {
+        if (isWhite ? to.rank == 0 : to.rank == 7) {
             switch (promotionMenu.selectOption()) {
                 case 0:
                     fromPiece->setType(QUEEN);
@@ -332,14 +332,13 @@ void Chess::move(Location &from, Location &to) {
             }
         }
 
-        if (isWhite ?
-            from.rank == 1 && to.rank == 3 : from.rank == 6 && to.rank == 4) {
+        if (abs(from.rank - to.rank) == 2) {
             enPassantSession = session;
             enPassantTo.set(to.rank, to.file);
         }
 
         if (session == enPassantSession + 1) {
-            int rank = isWhite ? to.rank - 1 : to.rank + 1;
+            int rank = isWhite ? to.rank + 1 : to.rank - 1;
             if (enPassantTo.equals(rank, to.file)) {
                 setPiece(enPassantTo, nullptr);
                 updatePieceFrame(enPassantTo);

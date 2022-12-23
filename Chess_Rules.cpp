@@ -31,7 +31,7 @@ void Chess::getMoves(const Location &cell, LinkedList<Location *> &moves, bool i
                         addLocation(rank, file, currentPiece, moves, isSimulating, true);
             break;
         case PAWN: {
-            int type = currentPiece->getColor() == WHITE ? 1 : -1;
+            int type = currentPiece->getColor() == WHITE ? -1 : 1;
             Piece *piece;
             int rank;
             int file;
