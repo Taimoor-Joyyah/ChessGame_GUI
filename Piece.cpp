@@ -18,6 +18,11 @@ void Piece::setType(PieceType type) {
     this->type = type;
 }
 
-const LinkedList<Location *> &Piece::getLegalMoves() const {
+LinkedList<struct Location *> &Piece::getLegalMoves() {
     return legalMoves;
+}
+
+void Piece::setLegalMoves(LinkedList<struct Location *> &legalMoves) {
+    this->legalMoves.clear();
+    this->legalMoves.merge(legalMoves);
 }

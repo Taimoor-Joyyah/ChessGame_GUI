@@ -44,9 +44,9 @@ private:
     Location currentCell{3, 3};
     Color currentPlayer = WHITE;
     Location selectedCell{-1, -1};
-    LinkedList<Location *> selectedLegalMoves{};
     time_t timePassed = 0;
     int session = 0;
+    bool isWhite = true;
 
     int whitePoints = 0;
     int blackPoints = 0;
@@ -56,13 +56,13 @@ private:
 
     bool castlingRule[6]{};// wlR, wK, wrR, blR, bK, brR // hasMoved
 
-    LinkedList<Location *> opponentLegalMoves{};
-    LinkedList<Location *> playerLegalMoves{};
     Location *getKingLocation(Color player);
 
-    int pieceCheckCount = 0;
+    Color getOpponent();
 
-    int debugState = 0;
+    Piece *getPiece(const Location &cell);
+
+    void setPiece(const Location &cell, Piece *piece);
 
     void setupBoard();
 
@@ -72,7 +72,7 @@ private:
 
     void move();
 
-    void move(const Location &from, const Location &to);
+    void move(Location &from, Location &to);
 
     void clearSelected();
 
@@ -82,20 +82,17 @@ private:
 
     bool isOnlyKing(Color player);
 
-    bool isCheck(Color player);
+    bool isCheckOn(Location *cell);
 
-    void getAllLegalMoves(Color player, LinkedList<Location *> &allMoves, LinkedList<Location *> &checkMoves,
-                          bool isSimulating);
-
-    void possibleMoves(const Location &cell, LinkedList<Location *> &possibles, LinkedList<Location *> &legalMoves,
-                       bool isSimulating = false);
+    void getMoves(const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
 
     void addStraight(const Location &cell, LinkedList<Location *> &possibles, bool isSimulating);
 
     void addDiagonal(const Location &cell, LinkedList<Location *> &possibles, bool isSimulating);
 
-    bool addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isSimulating,
-                     bool couldLeap = false);
+    bool
+    addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isSimulating,
+                bool couldLeap = false);
 
     bool updateStatus();
 
@@ -119,15 +116,11 @@ private:
 
     void updateSelectedCellFrame();
 
-    void updatePossibleCellFrame(LinkedList<Location *> &listMoves);
-
     void updatePieceFrame(const Location &cell);
 
-    void updateDebug();
+    void updateLegalMovesFrame();
 
-    void clearPossibles(LinkedList<Location *> &allMoves);
-
-    void cleanPossiblesFrame(LinkedList<Location *> &listMoves);
+    void clearLegalMovesFrame();
 };
 
 

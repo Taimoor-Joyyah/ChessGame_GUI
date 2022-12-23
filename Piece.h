@@ -17,7 +17,9 @@ public:
 
     PieceType getType() const;
 
-    const LinkedList<Location *> &getLegalMoves() const;
+    LinkedList<struct Location *> &getLegalMoves();
+
+    void setLegalMoves(LinkedList<struct Location *> &legalMoves);
 
     void setType(PieceType type);
 

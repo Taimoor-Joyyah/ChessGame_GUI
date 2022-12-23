@@ -12,7 +12,6 @@ enum Key {
     RIGHT = 54,     //NUM 6
     SELECT = 53,    //NUM 5
     ESC = 27,       //ESCAPE
-    DEBUG = 48,     //NUM 0
 };
 
 enum Color {

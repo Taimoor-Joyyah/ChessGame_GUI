@@ -80,7 +80,7 @@ void Chess::updateTimeFrame() {
 }
 
 void Chess::updatePointsFrame() {
-    stringstream  stream;
+    stringstream stream;
     stream << "W>";
     stream << whitePoints / 10;
     stream << whitePoints % 10;
@@ -121,9 +121,12 @@ void Chess::updateSelectedCellFrame() {
     frame.update(188, selectedCell.file * 4 + 8, selectedCell.rank * 2 + 4);
 }
 
-void Chess::updatePossibleCellFrame(LinkedList<Location *> &listMoves) {
-    for (int i = 0; i < listMoves.size(); ++i) {
-        Location *cell = listMoves.get(i);
+void Chess::updateLegalMovesFrame() {
+    if (selectedCell.rank == -1)
+        return;
+    LinkedList<Location *> &moves = getPiece(selectedCell)->getLegalMoves();
+    for (int i = 0; i < moves.size(); ++i) {
+        Location *cell = moves.get(i);
         int ch;
         for (int x = 0; x < 3; ++x) {
             ch = frame.getChar(x + cell->file * 4 + 5, cell->rank * 2 + 2);
@@ -138,10 +141,13 @@ void Chess::updatePossibleCellFrame(LinkedList<Location *> &listMoves) {
     }
 }
 
-void Chess::cleanPossiblesFrame(LinkedList<Location *> &listMoves) {
-    listMoves.iteratorReset();
-    while (!listMoves.isIteratorEnd())
-        resetCellFrame(*listMoves.iteratorNext());
+void Chess::clearLegalMovesFrame() {
+    if (selectedCell.rank == -1)
+        return;
+    LinkedList<Location *> &moves = getPiece(selectedCell)->getLegalMoves();
+    moves.iteratorReset();
+    while (!moves.isIteratorEnd())
+        resetCellFrame(*moves.iteratorNext());
 }
 
 void Chess::resetCellFrame(const Location &cell) {
@@ -163,28 +169,11 @@ void Chess::resetCellFrame(const Location &cell) {
 }
 
 void Chess::updatePieceFrame(const Location &cell) {
-    Piece *piece = pieces[cell.rank][cell.file];
+    Piece *piece = getPiece(cell);
     if (piece != nullptr) {
         char ch = (piece->getColor() == WHITE) ? piece->getType() : piece->getType() + 32;
         frame.update(ch, cell.file * 4 + 6, cell.rank * 2 + 3);
     } else
         frame.update(32, cell.file * 4 + 6, cell.rank * 2 + 3);
-}
-
-void Chess::updateDebug() {
-    switch (debugState) {
-        case 0:
-            updatePossibleCellFrame(opponentLegalMoves);
-            debugState = 1;
-            break;
-        case 1:
-            cleanPossiblesFrame(opponentLegalMoves);
-            updatePossibleCellFrame(playerLegalMoves);
-            debugState = 2;
-            break;
-        case 2:
-            cleanPossiblesFrame(playerLegalMoves);
-            debugState = 0;
-    }
 }
 
