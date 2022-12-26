@@ -88,27 +88,27 @@ Ending Chess::deadPositions{
 };
 
 void Chess::setupBoard() {
-    setPiece({0,0}, new Piece{BLACK, ROOK});
-    setPiece({0,1}, new Piece{BLACK, KNIGHT});
-    setPiece({0,2}, new Piece{BLACK, BISHOP});
-    setPiece({0,3}, new Piece{BLACK, QUEEN});
-    setPiece({0,4}, new Piece{BLACK, KING});
-    setPiece({0,5}, new Piece{BLACK, BISHOP});
-    setPiece({0,6}, new Piece{BLACK, KNIGHT});
-    setPiece({0,7}, new Piece{BLACK, ROOK});
+    setPiece({0, 0}, new Piece{BLACK, ROOK});
+    setPiece({0, 1}, new Piece{BLACK, KNIGHT});
+    setPiece({0, 2}, new Piece{BLACK, BISHOP});
+    setPiece({0, 3}, new Piece{BLACK, QUEEN});
+    setPiece({0, 4}, new Piece{BLACK, KING});
+    setPiece({0, 5}, new Piece{BLACK, BISHOP});
+    setPiece({0, 6}, new Piece{BLACK, KNIGHT});
+    setPiece({0, 7}, new Piece{BLACK, ROOK});
 
-    setPiece({7,0}, new Piece{WHITE, ROOK});
-    setPiece({7,1}, new Piece{WHITE, KNIGHT});
-    setPiece({7,2}, new Piece{WHITE, BISHOP});
-    setPiece({7,3}, new Piece{WHITE, QUEEN});
-    setPiece({7,4}, new Piece{WHITE, KING});
-    setPiece({7,5}, new Piece{WHITE, BISHOP});
-    setPiece({7,6}, new Piece{WHITE, KNIGHT});
-    setPiece({7,7}, new Piece{WHITE, ROOK});
+    setPiece({7, 0}, new Piece{WHITE, ROOK});
+    setPiece({7, 1}, new Piece{WHITE, KNIGHT});
+    setPiece({7, 2}, new Piece{WHITE, BISHOP});
+    setPiece({7, 3}, new Piece{WHITE, QUEEN});
+    setPiece({7, 4}, new Piece{WHITE, KING});
+    setPiece({7, 5}, new Piece{WHITE, BISHOP});
+    setPiece({7, 6}, new Piece{WHITE, KNIGHT});
+    setPiece({7, 7}, new Piece{WHITE, ROOK});
 
     for (int i = 0; i < 8; ++i) {
-        setPiece({1,i}, new Piece{BLACK, PAWN});
-        setPiece({6,i}, new Piece{WHITE, PAWN});
+        setPiece({1, i}, new Piece{BLACK, PAWN});
+        setPiece({6, i}, new Piece{WHITE, PAWN});
     }
 }
 
@@ -118,9 +118,6 @@ void Chess::startGame() {
     time_t startTime = time(nullptr);
     int key;
     while (true) {
-        Piece *currentPiece = getPiece(currentCell);
-        Piece *selectedPiece = (selectedCell.rank == -1) ? nullptr : getPiece(selectedCell);
-
         key = Input::getIfPressedKey();
         if (key) {
             switch (key) {
@@ -143,29 +140,10 @@ void Chess::startGame() {
                     currentCell.file = (currentCell.file + 1) % 8;
                     break;
                 case Key::SELECT: {
-                    if (currentCell != selectedCell) {
-                        if (selectedPiece != nullptr && selectedPiece->getLegalMoves().contains(&currentCell)) {
-                            clearLegalMovesFrame();
-                            move();
-                            clearSelected();
-                            if (!changePlayer()) {
-                                return;
-                            }
-                        } else if (currentPiece != nullptr && currentPiece->getColor() == currentPlayer) {
-                            clearLegalMovesFrame();
-                            clearSelected();
-                            if (!currentPiece->getLegalMoves().isEmpty())
-                                selectedCell.set(currentCell.rank, currentCell.file);
-                        } else {
-                            if (selectedPiece != nullptr && !selectedPiece->getLegalMoves().isEmpty()) {
-                                clearLegalMovesFrame();
-                                clearSelected();
-                            }
-                        }
-                    } else {
-                        clearLegalMovesFrame();
+                    if (currentCell == selectedCell)
                         clearSelected();
-                    }
+                    else if (!selectCell())
+                        return;
                 }
                     break;
                 case Key::ESC:
@@ -175,12 +153,7 @@ void Chess::startGame() {
                 default:
                     continue;
             }
-            if (!expertMode)
-                updateLegalMovesFrame();
-            if (selectedCell.rank != -1)
-                updateSelectedCellFrame();
-            updateCurrentCellFrame();
-            frame.updateDisplay();
+            updateFrame();
         } else {
             time_t currentTime = time(nullptr) - startTime;
             if (timePassed != currentTime) {
@@ -190,6 +163,34 @@ void Chess::startGame() {
             }
         }
     }
+}
+
+void Chess::updateFrame() {
+    if (!expertMode)
+        updateLegalMovesFrame();
+    if (selectedCell.rank != -1)
+        updateSelectedCellFrame();
+    updateCurrentCellFrame();
+    frame.updateDisplay();
+}
+
+bool Chess::selectCell() {
+    Piece *currentPiece = getPiece(currentCell);
+    Piece *selectedPiece = (selectedCell.rank == -1) ? nullptr : getPiece(selectedCell);
+
+    if (selectedPiece != nullptr && selectedPiece->getLegalMoves().contains(&currentCell)) {
+        Location temp{selectedCell.rank, selectedCell.file};
+        clearSelected();
+        move(temp);
+        if (!changePlayer())
+            return false;
+    } else if (currentPiece != nullptr && currentPiece->getColor() == currentPlayer) {
+        clearSelected();
+        if (!currentPiece->getLegalMoves().isEmpty())
+            selectedCell.set(currentCell.rank, currentCell.file);
+    } else if (selectedPiece != nullptr && !selectedPiece->getLegalMoves().isEmpty())
+        clearSelected();
+    return true;
 }
 
 bool Chess::changePlayer() {
@@ -202,60 +203,10 @@ bool Chess::changePlayer() {
 }
 
 bool Chess::updateStatus() {
-    bool hasLegalMove = false;
-    for (int rank = 0; rank < 8; ++rank) {
-        for (int file = 0; file < 8; ++file) {
-            Piece *piece = getPiece({rank,file});
-            if (piece != nullptr && piece->getColor() == currentPlayer) {
-                LinkedList<Location *> &moves = piece->getLegalMoves();
-                getMoves({rank, file}, moves, false);
-
-                setPiece({rank,file}, nullptr);
-                moves.iteratorReset();
-                while (!moves.isIteratorEnd()) {
-                    Location *move = moves.iteratorNext();
-                    Piece *temp = getPiece(*move);
-                    setPiece(*move, piece);
-
-                    if (isCheckOn(getKingLocation(currentPlayer)))
-                        moves.remove(move);
-
-                    setPiece(*move, temp);
-                }
-                setPiece({rank,file}, piece);
-
-                hasLegalMove = hasLegalMove || !moves.isEmpty();
-            }
-        }
-    }
-
+    bool hasLegalMove = simulate();
     bool isCheck = isCheckOn(getKingLocation(currentPlayer));
-    int castlingKingIndex = isWhite ? 4 : 1;
-    if (!castlingRule[castlingKingIndex]) {
-        int king_rank = isWhite ? 7 : 0;
-        if (!isCheck) {
-            for (int i = -1; i <= 1; i += 2) {
-                if (!castlingRule[castlingKingIndex + i]) {
-                    bool empty = true;
-                    int left = (i == -1 ? 1 : 5);
-                    int right = (i == -1 ? 3 : 6);
-                    for (int j = left; j <= right; ++j) {
-                        if (getPiece({king_rank, j}) != nullptr)
-                            empty = false;
-                    }
-                    if (empty) {
-                        Piece *king = getPiece(*getKingLocation(currentPlayer));
-                        if (!isCheckOn(new Location{king_rank, 4 + i}) &&
-                            !isCheckOn(new Location{king_rank, 4 + i * 2})) {
-                            king->getLegalMoves().insert(new Location{king_rank, 4 + i * 2});
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
+    if (!isCheck)
+        addIfCastling();
     if (!hasLegalMove) {
         if (isCheck) {
             checkmate.setText(new string[]{"CHECKMATE", isWhite ? "BLACK WON" : "WHITE WON"});
@@ -266,7 +217,6 @@ bool Chess::updateStatus() {
             return false;
         }
     }
-
     if (isOnlyKing(WHITE) && isOnlyKing(BLACK)) {
         deadPositions.pop();
         return false;
@@ -274,81 +224,80 @@ bool Chess::updateStatus() {
     return true;
 }
 
-void Chess::clearSelected() {
-    if (selectedCell.rank != -1) {
-        resetCellFrame(selectedCell);
+void Chess::addIfCastling() {
+    int castlingKingIndex = isWhite ? 4 : 1;
+    if (!castlingRule[castlingKingIndex]) {
+        int king_rank = isWhite ? 7 : 0;
+        for (int i = -1; i <= 1; i += 2) {
+            if (!castlingRule[castlingKingIndex + i] &&
+                ((i == 1) ? getPiece({king_rank, 6}) == nullptr :
+                 getPiece({king_rank, 1}) == getPiece({king_rank, 2}))) {
+                Piece *king = getPiece(*getKingLocation(currentPlayer));
+                if (king->getLegalMoves().contains(new Location{king_rank, 4 + i}) &&
+                    !isCheckOn(new Location{king_rank, 4 + i * 2})) {
+                    king->getLegalMoves().insert(new Location{king_rank, 4 + i * 2});
+                }
+            }
+        }
     }
-    selectedCell.set(-1, -1);
 }
 
-Color Chess::getOpponent() {
-    return isWhite ? BLACK : WHITE;
+bool Chess::simulate() {
+    bool hasLegalMove = false;
+    for (int rank = 0; rank < 8; ++rank) {
+        for (int file = 0; file < 8; ++file) {
+            Piece *piece = getPiece({rank, file});
+            if (piece != nullptr && piece->getColor() == currentPlayer) {
+                LinkedList<Location *> &moves = piece->getLegalMoves();
+                getMoves({rank, file}, moves, false);
+                setPiece({rank, file}, nullptr);
+                moves.iteratorReset();
+                while (!moves.isIteratorEnd()) {
+                    Location *move = moves.iteratorNext();
+                    Piece *temp = getPiece(*move);
+                    setPiece(*move, piece);
+                    if (isCheckOn(getKingLocation(currentPlayer)))
+                        moves.remove(move);
+                    setPiece(*move, temp);
+                }
+                setPiece({rank, file}, piece);
+                hasLegalMove = hasLegalMove || !moves.isEmpty();
+            }
+        }
+    }
+    return hasLegalMove;
 }
 
-Piece *Chess::getPiece(const Location &cell) {
-    return pieces[cell.rank][cell.file];
-}
-
-void Chess::setPiece(const Location &cell, Piece *piece) {
-    pieces[cell.rank][cell.file] = piece;
-}
-
-void Chess::move() {
-    move(selectedCell, currentCell);
+void Chess::move(Location &selected) {
+    move(selected, currentCell);
 }
 
 void Chess::move(Location &from, Location &to) {
     Piece *fromPiece = getPiece(from);
     Piece *toPiece = getPiece(to);
 
-    if (fromPiece->getType() == KING && abs(from.file - to.file) == 2) {
-        Location rook{from.rank, (to.file == 6 ? 7 : 0)};
-        Location moveTo{from.rank, (to.file == 6 ? 5 : 3)};
-        move(rook, moveTo);
-    }
-
-    int castlingIndex = isWhite ? 4 : 1;
-    if (fromPiece->getType() == KING)
-        castlingRule[castlingIndex] = true;
-    else if (fromPiece->getType() == ROOK) {
-        int direction = from.file == 7 ? 1 : -1;
-        castlingRule[castlingIndex + direction] = true;
-    }
+    castling(from, to);
+    evaluateCastling(from);
 
     if (fromPiece->getType() == PAWN) {
-        if (isWhite ? to.rank == 0 : to.rank == 7) {
-            switch (promotionMenu.selectOption()) {
-                case 0:
-                    fromPiece->setType(QUEEN);
-                    break;
-                case 1:
-                    fromPiece->setType(ROOK);
-                    break;
-                case 2:
-                    fromPiece->setType(BISHOP);
-                    break;
-                case 3:
-                    fromPiece->setType(KNIGHT);
-            }
-        }
-
-        if (abs(from.rank - to.rank) == 2) {
-            enPassantSession = session;
-            enPassantTo.set(to.rank, to.file);
-        }
-
-        if (session == enPassantSession + 1) {
-            int rank = isWhite ? to.rank + 1 : to.rank - 1;
-            if (enPassantTo.equals(rank, to.file)) {
-                setPiece(enPassantTo, nullptr);
-                updatePieceFrame(enPassantTo);
-                enPassantTo.set(-1, -1);
-                enPassantSession = -1;
-                (isWhite ? whitePoints : blackPoints) += 1;
-            }
-        }
+        promotion(to, fromPiece);
+        evaluateEnPassant(from, to);
+        enPassantMove(to);
     }
 
+    evaluatePoints(toPiece);
+
+    setPiece(from, nullptr);
+    setPiece(to, fromPiece);
+
+    updatePieceFrame(from);
+    updatePieceFrame(to);
+    updatePointsFrame();
+
+    delete toPiece;
+}
+
+void Chess::evaluatePoints(const Piece *toPiece) {
     if (toPiece != nullptr)
         switch (toPiece->getType()) {
             case QUEEN:
@@ -365,21 +314,88 @@ void Chess::move(Location &from, Location &to) {
                 (isWhite ? whitePoints : blackPoints) += 1;
                 break;
         }
+}
 
-    setPiece(from, nullptr);
-    setPiece(to, fromPiece);
+void Chess::enPassantMove(const Location &to) {
+    if (session == enPassantSession + 1) {
+        int rank = isWhite ? to.rank + 1 : to.rank - 1;
+        if (enPassantTo.equals(rank, to.file)) {
+            setPiece(enPassantTo, nullptr);
+            updatePieceFrame(enPassantTo);
+            enPassantTo.set(-1, -1);
+            enPassantSession = -1;
+            (isWhite ? whitePoints : blackPoints) += 1;
+        }
+    }
+}
 
-    updatePieceFrame(from);
-    updatePieceFrame(to);
-    updatePointsFrame();
+void Chess::evaluateEnPassant(const Location &from, const Location &to) {
+    if (abs(from.rank - to.rank) == 2) {
+        enPassantSession = session;
+        enPassantTo.set(to.rank, to.file);
+    }
+}
 
-    delete toPiece;
+void Chess::promotion(const Location &to, Piece *fromPiece) {
+    if (isWhite ? to.rank == 0 : to.rank == 7) {
+        switch (promotionMenu.selectOption()) {
+            case 0:
+                fromPiece->setType(QUEEN);
+                break;
+            case 1:
+                fromPiece->setType(ROOK);
+                break;
+            case 2:
+                fromPiece->setType(BISHOP);
+                break;
+            case 3:
+                fromPiece->setType(KNIGHT);
+        }
+    }
+}
+
+void Chess::castling(const Location &from, const Location &to) {
+    if (getPiece(from)->getType() == KING && abs(from.file - to.file) == 2) {
+        Location rook{from.rank, (to.file == 6 ? 7 : 0)};
+        Location moveTo{from.rank, (to.file == 6 ? 5 : 3)};
+        move(rook, moveTo);
+    }
+}
+
+void Chess::clearSelected() {
+    clearLegalMovesFrame();
+    if (selectedCell.rank != -1)
+        resetCellFrame(selectedCell);
+    selectedCell.set(-1, -1);
+}
+
+Color Chess::getOpponent() {
+    return isWhite ? BLACK : WHITE;
+}
+
+Piece *Chess::getPiece(const Location &cell) {
+    return pieces[cell.rank][cell.file];
+}
+
+void Chess::setPiece(const Location &cell, Piece *piece) {
+    pieces[cell.rank][cell.file] = piece;
+}
+
+void Chess::evaluateCastling(const Location &cell) {
+    Piece *piece = getPiece(cell);
+    int castlingIndex = isWhite ? 4 : 1;
+    if (piece->getType() == KING)
+        castlingRule[castlingIndex] = true;
+    else if (piece->getType() == ROOK) {
+        int direction = cell.file == 7 ? 1 : -1;
+        castlingRule[castlingIndex + direction] = true;
+    }
 }
 
 Location *Chess::getKingLocation(Color player) {
     for (int y = 0; y < 8; ++y) {
         for (int x = 0; x < 8; ++x) {
-            Piece *piece = getPiece({y,x});
+            Piece *piece = getPiece({y, x});
             if (piece != nullptr && piece->getColor() == player && piece->getType() == KING)
                 return new Location{y, x};
         }

@@ -27,7 +27,6 @@ public:
     void startGame();
 
 private:
-
     static Frame frame;
     Piece *pieces[8][8]{};
     static Menu pauseMenu;
@@ -70,11 +69,31 @@ private:
 
     bool pause_menu(time_t &startTime);
 
-    void move();
+    bool updateStatus();
+
+    void move(Location &selected);
 
     void move(Location &from, Location &to);
 
+    bool simulate();
+
+    void addIfCastling();
+
+    void evaluateCastling(const Location &cell);
+
+    void castling(const Location &from, const Location &to);
+
+    void promotion(const Location &to, Piece *fromPiece);
+
+    void evaluateEnPassant(const Location &from, const Location &to);
+
+    void enPassantMove(const Location &to);
+
+    void evaluatePoints(const Piece *toPiece);
+
     void clearSelected();
+
+    bool selectCell();
 
     bool changePlayer();
 
@@ -94,8 +113,6 @@ private:
     addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isSimulating,
                 bool couldLeap = false);
 
-    bool updateStatus();
-
     // Frame Functions
 
     static string timeToString(int seconds);
@@ -105,6 +122,8 @@ private:
     void setupBoardFrame();
 
     void setupPiecesFrame();
+
+    void updateFrame();
 
     void updatePlayerFrame();
 
