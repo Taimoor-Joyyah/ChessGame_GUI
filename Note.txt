@@ -39,9 +39,9 @@ Easy mode display possible move of selected box
 !@#$%^&*()_+-={}:"<>?[];',./|\/*-+.\|
 
 TODO:
-* make start game logo frame(make 2 sec animation eg logo fall from top to its place)
-* press any key on logo (after animation)
-* make background of main menu ()
++ make start game logo frame(make 2 sec animation eg logo fall from top to its place)
++ press any key on logo (after animation)
++ make background of main menu ()
 * destructors
 
 Rules:
@@ -97,7 +97,7 @@ if king move not possible then checkmate other player win
 
 + while checking see if king can kill a piece which is protected
 + king cannot kill a protected piece but other piece can.
-* if a piece is protecting king from check than it cannot be moved
++ if a piece is protecting king from check than it cannot be moved
 
 if (checked)
 . move king to a safe square
