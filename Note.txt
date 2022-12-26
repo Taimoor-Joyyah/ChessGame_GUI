@@ -108,3 +108,17 @@ else
 
 In Short, Play a move that does not put king in danger.
 So, Simulate each possible move and get legal moves.
+
+Save Info:-
+expert Mode
+CurrentPlayer
+// isWhite // on load
+timePassed
+session
+enPassantSession
+white/black points
+currentCell
+selectedCell
+enPassantTo
+CastlingRule
+pieces type and color

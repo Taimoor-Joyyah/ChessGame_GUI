@@ -108,6 +108,8 @@ void Chess::updateCurrentCellFrame() {
 }
 
 void Chess::updateSelectedCellFrame() {
+    if (selectedCell.rank == -1)
+        return;
     for (int x = 0; x < 3; ++x) {
         frame.update(220, x + selectedCell.file * 4 + 5, selectedCell.rank * 2 + 2);
         frame.update(223, x + selectedCell.file * 4 + 5, selectedCell.rank * 2 + 4);
@@ -151,6 +153,8 @@ void Chess::clearLegalMovesFrame() {
 }
 
 void Chess::resetCellFrame(const Location &cell) {
+    if (cell.rank == -1)
+        return;
     for (int x = 0; x < 3; ++x) {
         frame.update(196, x + cell.file * 4 + 5, cell.rank * 2 + 2);
         frame.update(196, x + cell.file * 4 + 5, cell.rank * 2 + 4);

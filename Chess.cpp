@@ -4,18 +4,25 @@
 
 #include <cmath>
 #include <ctime>
+#include <fstream>
 #include "Chess.h"
 
 Frame Chess::frame{};
 
-Chess::Chess() {
-    setupBoard();
+Chess::Chess(bool isContinue) {
+    if (isContinue) {
+        loaded = load();
+    } else {
+        deleteSave();
+        setupBoard();
+    }
     setupBoardFrame();
     setupPiecesFrame();
     updateTimeFrame();
     updatePointsFrame();
     updatePlayerFrame();
     updateCurrentCellFrame();
+    updateSelectedCellFrame();
 }
 
 Chess::~Chess() {
@@ -40,10 +47,11 @@ Menu Chess::pauseMenu{
         new string[]{
                 "Continue",
                 "Expert Mode",
+                "Save",
                 "Help",
                 "Quit"
         },
-        4,
+        5,
         true,
         &frame
 };
@@ -113,9 +121,12 @@ void Chess::setupBoard() {
 }
 
 void Chess::startGame() {
-    frame.updateDisplay();
+    if (!loaded)
+        return;
     updateStatus();
-    time_t startTime = time(nullptr);
+    updateLegalMovesFrame();
+    frame.updateDisplay();
+    time_t startTime = time(nullptr) - timePassed;
     int key;
     while (true) {
         key = Input::getIfPressedKey();
@@ -168,8 +179,7 @@ void Chess::startGame() {
 void Chess::updateFrame() {
     if (!expertMode)
         updateLegalMovesFrame();
-    if (selectedCell.rank != -1)
-        updateSelectedCellFrame();
+    updateSelectedCellFrame();
     updateCurrentCellFrame();
     frame.updateDisplay();
 }
@@ -182,8 +192,10 @@ bool Chess::selectCell() {
         Location temp{selectedCell.rank, selectedCell.file};
         clearSelected();
         move(temp);
-        if (!changePlayer())
+        if (!changePlayer()) {
+            deleteSave();
             return false;
+        }
     } else if (currentPiece != nullptr && currentPiece->getColor() == currentPlayer) {
         clearSelected();
         if (!currentPiece->getLegalMoves().isEmpty())
@@ -364,8 +376,7 @@ void Chess::castling(const Location &from, const Location &to) {
 
 void Chess::clearSelected() {
     clearLegalMovesFrame();
-    if (selectedCell.rank != -1)
-        resetCellFrame(selectedCell);
+    resetCellFrame(selectedCell);
     selectedCell.set(-1, -1);
 }
 
@@ -413,13 +424,16 @@ bool Chess::pause_menu(time_t &startTime) {
                 expert_menu();
                 break;
             case 2:
-                help.pop();
+                save();
                 break;
             case 3:
+                help.pop();
+                break;
+            case 4:
                 if (quitMenu.selectOption() == 1)
                     return false;
         }
-    } while (option != 0 && option != -1);
+    } while (option != 0 && option != 2 && option != -1);
     startTime += time(nullptr) - delay;
     return true;
 }
@@ -436,4 +450,103 @@ void Chess::expert_menu() {
                 updateSelectedCellFrame();
             updateCurrentCellFrame();
     }
+}
+
+void Chess::save() {
+    ofstream stream("prevState.sav", ios::binary | ios::out);
+    if (stream.is_open()) {
+        int temp = (expertMode ? 1 : 0);
+        binaryWriteInt(stream, temp);
+        temp = (isWhite ? 1 : 0);
+        binaryWriteInt(stream, temp);
+        binaryWriteInt(stream, (int &) timePassed);
+        binaryWriteInt(stream, session);
+        binaryWriteInt(stream, enPassantSession);
+        binaryWriteInt(stream, whitePoints);
+        binaryWriteInt(stream, blackPoints);
+        binaryWriteInt(stream, currentCell.rank);
+        binaryWriteInt(stream, currentCell.file);
+        binaryWriteInt(stream, selectedCell.rank);
+        binaryWriteInt(stream, selectedCell.file);
+        binaryWriteInt(stream, enPassantTo.rank);
+        binaryWriteInt(stream, enPassantTo.file);
+        for (bool i: castlingRule) {
+            temp = (i ? 1 : 0);
+            binaryWriteInt(stream, temp);
+        }
+        for (int rank = 0; rank < 8; ++rank) {
+            for (int file = 0; file < 8; ++file) {
+                Piece *piece = getPiece({rank, file});
+                if (piece != nullptr) {
+                    temp = (piece->getColor() == WHITE ? 1 : 0);
+                    binaryWriteInt(stream, temp);
+                    temp = (int) piece->getType();
+                    binaryWriteInt(stream, temp);
+                } else {
+                    temp = -1;
+                    binaryWriteInt(stream, temp);
+                    binaryWriteInt(stream, temp);
+                }
+            }
+        }
+        stream.close();
+    }
+}
+
+bool Chess::load() {
+    ifstream stream("prevState.sav", ios::binary | ios::in);
+    if (stream.is_open()) {
+        int data;
+        binaryReadInt(stream, data);
+        expertMode = (data == 1);
+        binaryReadInt(stream, data);
+        currentPlayer = (data == 1) ? WHITE : BLACK;
+        isWhite = (currentPlayer == WHITE);
+        binaryReadInt(stream, data);
+        timePassed = data;
+        binaryReadInt(stream, session);
+        binaryReadInt(stream, enPassantSession);
+        binaryReadInt(stream, whitePoints);
+        binaryReadInt(stream, blackPoints);
+        binaryReadInt(stream, currentCell.rank);
+        binaryReadInt(stream, currentCell.file);
+        binaryReadInt(stream, selectedCell.rank);
+        binaryReadInt(stream, selectedCell.file);
+        binaryReadInt(stream, enPassantTo.rank);
+        binaryReadInt(stream, enPassantTo.file);
+
+        for (bool &i: castlingRule) {
+            binaryReadInt(stream, data);
+            i = (data == 1);
+        }
+        for (int rank = 0; rank < 8; ++rank) {
+            for (int file = 0; file < 8; ++file) {
+                binaryReadInt(stream, data);
+                Color player = (data == 1) ? WHITE : BLACK;
+                binaryReadInt(stream, data);
+
+                if (data != -1) {
+                    auto type = (PieceType) data;
+                    setPiece({rank, file}, new Piece{player, type});
+                } else
+                    setPiece({rank, file}, nullptr);
+            }
+        }
+        stream.close();
+        return true;
+    }
+    stream.close();
+    return false;
+}
+
+void Chess::binaryWriteInt(ofstream &stream, int &data) const {
+    stream.write((char *) &data, 4);
+}
+
+void Chess::binaryReadInt(ifstream &stream, int &data) const {
+    stream.read((char *) &data, 4);
+}
+
+void Chess::deleteSave() {
+    remove("prevState.sav");
 }

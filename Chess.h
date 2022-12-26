@@ -20,7 +20,7 @@ using namespace std;
 
 class Chess {
 public:
-    Chess();
+    Chess(bool isContinue);
 
     ~Chess();
 
@@ -55,6 +55,7 @@ private:
 
     bool castlingRule[6]{};// wlR, wK, wrR, blR, bK, brR // hasMoved
 
+    bool loaded = true;
     Location *getKingLocation(Color player);
 
     Color getOpponent();
@@ -96,6 +97,10 @@ private:
     bool selectCell();
 
     bool changePlayer();
+
+    void save();
+    bool load();
+    void deleteSave();
 
     // Rules Functions
 
@@ -140,6 +145,10 @@ private:
     void updateLegalMovesFrame();
 
     void clearLegalMovesFrame();
+
+    void binaryWriteInt(ofstream &stream, int &data) const;
+
+    void binaryReadInt(ifstream &stream, int &data) const;
 };
 
 
