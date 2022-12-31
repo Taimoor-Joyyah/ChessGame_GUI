@@ -1,18 +1,16 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(ChessGame)
+project(ChessGame_GUI)
 
 set(CMAKE_CXX_STANDARD 20)
 
-#set(SDL2_INCLUDE_DIR C:/libs/SDL/x86_64-w64-mingw32/include)
-#set(SDL2_LIB_DIR C:/libs/SDL/x86_64-w64-mingw32/lib/)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-#set(SDL2_DIR C:/libs/SDL/cmake)
-#find_package(SDL2 REQUIRED)
+set(raylib_DIR C:/libs/raylib)
 
-#include_directories(${SDL2_INCLUDE_DIR})
-#link_directories(${SDL2_LIB_DIR})
+include_directories(${raylib_DIR}/include)
+link_directories(${raylib_DIR}/lib)
 
-add_executable(ChessGame main.cpp LinkedList.h Input.cpp Input.h Frame.cpp Frame.h Menu.cpp Menu.h Chess.cpp Chess.h Enum.h Location.cpp Location.h Piece.cpp Piece.h Chess_Frame.cpp Chess_Rules.cpp Popup.cpp Popup.h Ending.cpp Ending.h Logo.cpp Logo.h)
+add_executable(ChessGame_GUI main.cpp LinkedList.h Input.cpp Input.h Frame.cpp Frame.h Menu.cpp Menu.h Chess.cpp Chess.h Enum.h Location.cpp Location.h Piece.cpp Piece.h Chess_Frame.cpp Chess_Rules.cpp Popup.cpp Popup.h Ending.cpp Ending.h Logo.cpp Logo.h)
 
-#target_link_libraries(${PROJECT_NAME} SDL2main SDL2)
+target_link_libraries(${PROJECT_NAME} raylib)
