@@ -4,9 +4,9 @@
 
 #include "Piece.h"
 
-Piece::Piece(Color color, PieceType type) : color(color), type(type) {}
+Piece::Piece(P_Color color, PieceType type) : color(color), type(type) {}
 
-Color Piece::getColor() const {
+P_Color Piece::getColor() const {
     return color;
 }
 

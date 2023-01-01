@@ -14,9 +14,9 @@ enum Key {
     ESC = 27,       //ESCAPE
 };
 
-enum Color {
-    WHITE,
-    BLACK
+enum P_Color {
+    P_WHITE,
+    P_BLACK
 };
 
 enum PieceType {

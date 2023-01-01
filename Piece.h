@@ -11,9 +11,9 @@
 
 class Piece {
 public:
-    Piece(Color color, PieceType type);
+    Piece(P_Color color, PieceType type);
 
-    Color getColor() const;
+    P_Color getColor() const;
 
     PieceType getType() const;
 
@@ -24,7 +24,7 @@ public:
     void setType(PieceType type);
 
 private:
-    Color color;
+    P_Color color;
     PieceType type;
     LinkedList<Location *> legalMoves{};
 };

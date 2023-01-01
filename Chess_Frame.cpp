@@ -68,7 +68,7 @@ void Chess::setupPiecesFrame() {
 }
 
 void Chess::updatePlayerFrame() {
-    string playerString = (currentPlayer == WHITE) ? "WHITE" : "BLACK";
+    string playerString = (currentPlayer == P_WHITE) ? "WHITE" : "BLACK";
     for (int i = 0; i < playerString.size(); ++i)
         frame.update(playerString[i], i + 4, 1);
 }
@@ -175,7 +175,7 @@ void Chess::resetCellFrame(const Location &cell) {
 void Chess::updatePieceFrame(const Location &cell) {
     Piece *piece = getPiece(cell);
     if (piece != nullptr) {
-        char ch = (piece->getColor() == WHITE) ? piece->getType() : piece->getType() + 32;
+        char ch = (piece->getColor() == P_WHITE) ? piece->getType() : piece->getType() + 32;
         frame.update(ch, cell.file * 4 + 6, cell.rank * 2 + 3);
     } else
         frame.update(32, cell.file * 4 + 6, cell.rank * 2 + 3);

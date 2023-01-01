@@ -3,83 +3,31 @@
 // Created by J-Bros on 12/17/2022.
 
 #include "Menu.h"
-#include "Input.h"
-#include "Enum.h"
+#include "raylib.h"
+#include "ChessWindow.h"
 
 Menu::Menu(string &&prompt, string *options, int optionCount, bool escapable)
-        : prompt(prompt), options(options), optionCount(optionCount), escapable(escapable) {
-}
-
-Menu::Menu(string &&prompt, string *options, int optionCount, bool escapable, Frame *base)
-        : Menu("", options, optionCount, escapable) {
-    this->prompt = prompt;
-    this->base = base;
+        : prompt(prompt), options(options), optionCount(optionCount), escapable(escapable), currentOption(0) {
 }
 
 int Menu::selectOption() {
-    int previousOption = 0;
-    int currentOption = 0;
-    if (base) frame.copy(*base);
-    setupFrame();
-    updateFrame(currentOption, previousOption);
-    frame.updateDisplay();
-    int key;
+    currentOption = 0;
+    ChessWindow::menu = this;
+    int key{};
     do {
-        previousOption = currentOption;
-        key = Input::getKey();
-
+        key = GetKeyPressed();
         switch (key) {
-            case Key::UP:
-                currentOption = currentOption == 0 ?
-                                optionCount - 1 : currentOption - 1;
+            case KEY_KP_8:
+                currentOption = currentOption == 0 ? optionCount - 1 : currentOption - 1;
                 break;
-            case Key::DOWN:
+            case KEY_KP_2:
                 currentOption = (currentOption + 1) % optionCount;
                 break;
-            case Key::ESC:
-                if (escapable) {
-                    return -1;
-                }
-            default:
-                continue;
+            case KEY_ESCAPE:
+                if (escapable)
+                    currentOption = -1;
         }
-        updateFrame(currentOption, previousOption);
-        frame.updateDisplay();
-    } while (key != Key::SELECT);
-
+    } while (key != KEY_KP_5 && key != KEY_ESCAPE);
+    ChessWindow::menu = nullptr;
     return currentOption;
-}
-
-void Menu::setupFrame() {
-    for (int y = 5; y <= optionCount + 9; ++y)
-        for (int x = 11; x < 30; ++x)
-            frame.update(x % 2 ? 250 : 32, x, y);
-
-    for (int i = 0; i < prompt.size(); ++i) {
-        int startX = 19 - prompt.size() / 2;
-        frame.update(prompt[i], startX + 1 + i, 6);
-    }
-
-    for (int option = 0; option < optionCount; ++option)
-        for (int i = 0; i < options[option].size(); ++i) {
-            int startX = 19 - options[option].size() / 2;
-            frame.update(options[option][i], startX + 1 + i, option + 8);
-        }
-
-    frame.createRectangle(11, 29, 5, optionCount + 9);
-}
-
-void Menu::updateFrame(int currentOption, int previousOption) {
-    int curSize = options[currentOption].size();
-    int prevSize = options[previousOption].size();
-
-    for (int x = 12; x < 29; ++x) {
-        int startXPrev = 19 - prevSize / 2;
-        if (x <= startXPrev || x > startXPrev + prevSize)
-            frame.update(x % 2 ? 250 : 32, x, previousOption + 8);
-
-        int startXCur = 19 - curSize / 2;
-        if (x <= startXCur || x > startXCur + curSize)
-            frame.update(219, x, currentOption + 8);
-    }
 }

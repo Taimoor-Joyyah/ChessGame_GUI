@@ -122,3 +122,11 @@ selectedCell
 enPassantTo
 CastlingRule
 pieces type and color
+
+//GUI
+
++ fix slutter while simulating pieces
++ fix continue game slutter
++ add headers
++ add pop
++ add ending /..

@@ -1,35 +1,38 @@
 #include "Menu.h"
 #include "Chess.h"
 #include "Popup.h"
-#include "Logo.h"
+#include "ChessWindow.h"
+
+#include <thread>
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    Logo chessLogo{};
-    chessLogo.show();
-
     Menu mainMenu{"MAIN MENU", new string[]{
             "Continue",
             "New Game",
             "Help",
             "Credit",
             "Exit"
-    }, 5, true, &chessLogo.getFrame()};
+    }, 5, true};
 
     Menu exitMenu{"EXIT GAME", new string[]{
             "No",
             "Yes"
-    }, 2, true, &chessLogo.getFrame()};
+    }, 2, true};
 
     Popup help{"../Help.txt"};
     Popup credit{"../Credit.txt"};
 
+    thread window(ChessWindow::drawWindow);
+
     while (true) {
         switch (mainMenu.selectOption()) {
             case 0: {
-                Chess game{true};
-                game.startGame();
+                if (FileExists("prevState.sav")) {
+                    Chess game{true};
+                    game.startGame();
+                }
             }
                 break;
             case 1: {
@@ -45,8 +48,11 @@ int main(int argc, char *argv[]) {
                 break;
             case -1:
             case 4:
-                if (exitMenu.selectOption() == 1)
+                if (exitMenu.selectOption() == 1) {
+                    ChessWindow::shouldWindowClose = true;
+                    window.join();
                     exit(0);
+                }
         }
     }
 }

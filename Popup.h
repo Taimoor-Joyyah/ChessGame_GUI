@@ -7,23 +7,19 @@
 
 #include <iostream>
 #include "LinkedList.h"
-#include "Frame.h"
 
 using namespace std;
 
 class Popup {
 public:
+    int currentTopLine{};
+
     explicit Popup(const string filename);
+    LinkedList<string*> statements{};
     void pop();
 
 private:
-    LinkedList<string*> statements{};
-    Frame frame;
-
-    void setupFrame();
-    void updateFrame(int topLine);
     void setStatements(const string filename);
-    void clear();
 };
 
 

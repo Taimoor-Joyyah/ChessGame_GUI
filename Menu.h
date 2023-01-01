@@ -12,21 +12,16 @@ using namespace std;
 
 class Menu {
 public:
-    Menu(string &&prompt, string *options, int optionCount, bool escapable);
-    Menu(string &&prompt, string *options, int optionCount, bool escapable, Frame *base);
-    int selectOption();
-
-private:
     string prompt;
     string *options;
     int optionCount;
+    int currentOption;
+
+    Menu(string &&prompt, string *options, int optionCount, bool escapable);
+
+    int selectOption();
+private:
     bool escapable;
-    Frame frame;
-    Frame *base;
-
-    void setupFrame();
-    void updateFrame(int currentOption, int previousOption);
 };
-
 
 #endif //CHESSGAME_MENU_H

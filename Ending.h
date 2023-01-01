@@ -6,23 +6,16 @@
 #define CHESSGAME_ENDING_H
 
 #include <iostream>
-#include "Frame.h"
 
 using namespace std;
 
 class Ending {
 public:
-    Ending(const string *text, int countLine, Frame *base);
+    const string *text;
+
+    Ending(const string *text);
     void setText(const string *text);
     void pop();
-
-private:
-    Frame frame;
-    Frame *base;
-    const string *text;
-    int countLine;
-
-    void setupFrame();
 };
 
 

@@ -26,7 +26,6 @@ public:
 
     void startGame();
 
-private:
     static Frame frame;
     Piece *pieces[8][8]{};
     static Menu pauseMenu;
@@ -41,8 +40,8 @@ private:
     bool expertMode = false;
 
     Location currentCell{3, 3};
-    Color currentPlayer = WHITE;
-    Location selectedCell{-1, -1};
+    P_Color currentPlayer = P_WHITE;
+    Location selectedCell{-1};
     time_t timePassed = 0;
     int session = 0;
     bool isWhite = true;
@@ -50,15 +49,19 @@ private:
     int whitePoints = 0;
     int blackPoints = 0;
 
-    Location enPassantTo{-1, -1};
+    Location enPassantTo{-1};
     int enPassantSession{};
 
     bool castlingRule[6]{};// wlR, wK, wrR, blR, bK, brR // hasMoved
 
     bool loaded = true;
-    Location *getKingLocation(Color player);
 
-    Color getOpponent();
+    static string timeToString(int seconds);
+
+private:
+    Location *getKingLocation(Piece *pieceList[8][8], P_Color player);
+
+    P_Color getOpponent();
 
     Piece *getPiece(const Location &cell);
 
@@ -99,28 +102,28 @@ private:
     bool changePlayer();
 
     void save();
+
     bool load();
+
     void deleteSave();
 
     // Rules Functions
 
-    bool isOnlyKing(Color player);
+    bool isOnlyKing(P_Color player);
 
-    bool isCheckOn(Location *cell);
+    bool isCheckOn(Piece *pieceList[8][8], Location *cell);
 
-    void getMoves(const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
+    void getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
 
-    void addStraight(const Location &cell, LinkedList<Location *> &possibles, bool isSimulating);
+    void addStraight(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
 
-    void addDiagonal(const Location &cell, LinkedList<Location *> &possibles, bool isSimulating);
+    void addDiagonal(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
 
     bool
-    addLocation(int rank, int file, const Piece *currentPiece, LinkedList<Location *> &possibles, bool isSimulating,
-                bool couldLeap = false);
+    addLocation(Piece *pieceList[8][8], int rank, int file, const Piece *currentPiece, LinkedList<Location *> &moves,
+                bool isSimulating, bool couldLeap);
 
     // Frame Functions
-
-    static string timeToString(int seconds);
 
     void resetCellFrame(const Location &cell);
 
