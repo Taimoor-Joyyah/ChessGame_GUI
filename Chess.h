@@ -7,13 +7,11 @@
 
 #include <sstream>
 #include "LinkedList.h"
-#include "Frame.h"
 #include "Enum.h"
 #include "Location.h"
 #include "Menu.h"
 #include "Popup.h"
 #include "Piece.h"
-#include "Input.h"
 #include "Ending.h"
 
 using namespace std;
@@ -26,7 +24,6 @@ public:
 
     void startGame();
 
-    static Frame frame;
     Piece *pieces[8][8]{};
     static Menu pauseMenu;
 
@@ -95,8 +92,6 @@ private:
 
     void evaluatePoints(const Piece *toPiece);
 
-    void clearSelected();
-
     bool selectCell();
 
     bool changePlayer();
@@ -106,6 +101,10 @@ private:
     bool load();
 
     void deleteSave();
+
+    void binaryWriteInt(ofstream &stream, int &data) const;
+
+    void binaryReadInt(ifstream &stream, int &data) const;
 
     // Rules Functions
 
@@ -119,39 +118,8 @@ private:
 
     void addDiagonal(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
 
-    bool
-    addLocation(Piece *pieceList[8][8], int rank, int file, const Piece *currentPiece, LinkedList<Location *> &moves,
-                bool isSimulating, bool couldLeap);
-
-    // Frame Functions
-
-    void resetCellFrame(const Location &cell);
-
-    void setupBoardFrame();
-
-    void setupPiecesFrame();
-
-    void updateFrame();
-
-    void updatePlayerFrame();
-
-    void updateTimeFrame();
-
-    void updatePointsFrame();
-
-    void updateCurrentCellFrame();
-
-    void updateSelectedCellFrame();
-
-    void updatePieceFrame(const Location &cell);
-
-    void updateLegalMovesFrame();
-
-    void clearLegalMovesFrame();
-
-    void binaryWriteInt(ofstream &stream, int &data) const;
-
-    void binaryReadInt(ifstream &stream, int &data) const;
+    bool addLocation(Piece *pieceList[8][8], int rank, int file,
+                     const Piece *currentPiece, LinkedList<Location *> &moves, bool isSimulating, bool couldLeap);
 };
 
 

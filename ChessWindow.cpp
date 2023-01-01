@@ -18,10 +18,11 @@ void ChessWindow::drawWindow() {
     SetExitKey(KEY_F4);
     loadTextures();
 
-    Color menuColor{0, 0, 0, 192};
-    Color current{0, 228, 48, 128}; // green
-    Color selected{230, 41, 55, 128}; // red
-    Color possible{0, 121, 241, 128}; // blue
+    Color menuColor = ColorAlpha(BLACK, 0.75);;
+    Color current = ColorAlpha(GREEN, 0.5);
+    Color selected = ColorAlpha(RED, 0.5);
+    Color possible = ColorAlpha(BLUE, 0.5);
+    Color capture = ColorAlpha(PURPLE, 0.75);
     Color header = ColorAlpha(ORANGE, 0.6);
 
     while (!WindowShouldClose() && !shouldWindowClose) {
@@ -49,7 +50,8 @@ void ChessWindow::drawWindow() {
                     piece->getLegalMoves().iteratorReset();
                     while (!piece->getLegalMoves().isIteratorEnd()) {
                         Location *cell = piece->getLegalMoves().iteratorNext();
-                        DrawCircle(96 + 64 * cell->file, 96 + 64 * cell->rank, 18, possible);
+                        DrawCircle(96 + 64 * cell->file, 96 + 64 * cell->rank, 18,
+                                   game->pieces[cell->rank][cell->file] != nullptr ? capture : possible);
                     }
                 }
             }

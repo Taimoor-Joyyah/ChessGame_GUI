@@ -5,15 +5,6 @@
 #ifndef CHESSGAME_ENUM_H
 #define CHESSGAME_ENUM_H
 
-enum Key {
-    UP = 56,        //NUM 8
-    DOWN = 50,      //NUM 2
-    LEFT = 52,      //NUM 4
-    RIGHT = 54,     //NUM 6
-    SELECT = 53,    //NUM 5
-    ESC = 27,       //ESCAPE
-};
-
 enum P_Color {
     P_WHITE,
     P_BLACK

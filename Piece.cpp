@@ -22,7 +22,3 @@ LinkedList<struct Location *> &Piece::getLegalMoves() {
     return legalMoves;
 }
 
-void Piece::setLegalMoves(LinkedList<struct Location *> &legalMoves) {
-    this->legalMoves.clear();
-    this->legalMoves.merge(legalMoves);
-}

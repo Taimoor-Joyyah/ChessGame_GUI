@@ -19,8 +19,6 @@ public:
 
     LinkedList<struct Location *> &getLegalMoves();
 
-    void setLegalMoves(LinkedList<struct Location *> &legalMoves);
-
     void setType(PieceType type);
 
 private:

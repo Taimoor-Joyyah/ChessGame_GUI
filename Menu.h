@@ -6,7 +6,6 @@
 #define CHESSGAME_MENU_H
 
 #include <iostream>
-#include "Frame.h"
 
 using namespace std;
 

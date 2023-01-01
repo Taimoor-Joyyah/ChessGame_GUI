@@ -9,8 +9,6 @@
 #include "ChessWindow.h"
 #include "raylib.h"
 
-Frame Chess::frame{};
-
 Chess::Chess(bool isContinue) {
     if (isContinue) {
         loaded = load();
@@ -106,7 +104,6 @@ void Chess::startGame() {
     if (!loaded)
         return;
     updateStatus();
-    updateLegalMovesFrame();
 
     ChessWindow::game = this;
 
@@ -148,32 +145,23 @@ void Chess::startGame() {
     }
 }
 
-void Chess::updateFrame() {
-    if (!expertMode)
-        updateLegalMovesFrame();
-    updateSelectedCellFrame();
-    updateCurrentCellFrame();
-    frame.updateDisplay();
-}
-
 bool Chess::selectCell() {
     Piece *currentPiece = getPiece(currentCell);
     Piece *selectedPiece = (selectedCell.rank == -1) ? nullptr : getPiece(selectedCell);
 
     if (selectedPiece != nullptr && selectedPiece->getLegalMoves().contains(&currentCell)) {
         Location temp{selectedCell.rank, selectedCell.file};
-        clearSelected();
+        selectedCell.set(-1, -1);
         move(temp);
         if (!changePlayer()) {
             deleteSave();
             return false;
         }
     } else if (currentPiece != nullptr && currentPiece->getColor() == currentPlayer) {
-        clearSelected();
         if (!currentPiece->getLegalMoves().isEmpty())
             selectedCell.set(currentCell.rank, currentCell.file);
     } else if (selectedPiece != nullptr && !selectedPiece->getLegalMoves().isEmpty())
-        clearSelected();
+        selectedCell.set(-1, -1);
     return true;
 }
 
@@ -181,7 +169,6 @@ bool Chess::changePlayer() {
     currentPlayer = getOpponent();
     isWhite = !isWhite;
     ++session;
-    updatePlayerFrame();
     return updateStatus();
 }
 
@@ -279,10 +266,6 @@ void Chess::move(Location &from, Location &to) {
     setPiece(from, nullptr);
     setPiece(to, fromPiece);
 
-    updatePieceFrame(from);
-    updatePieceFrame(to);
-    updatePointsFrame();
-
     delete toPiece;
 }
 
@@ -310,7 +293,6 @@ void Chess::enPassantMove(const Location &to) {
         int rank = isWhite ? to.rank + 1 : to.rank - 1;
         if (enPassantTo.equals(rank, to.file)) {
             setPiece(enPassantTo, nullptr);
-            updatePieceFrame(enPassantTo);
             enPassantTo.set(-1, -1);
             enPassantSession = -1;
             (isWhite ? whitePoints : blackPoints) += 1;
@@ -349,12 +331,6 @@ void Chess::castling(const Location &from, const Location &to) {
         Location moveTo{from.rank, (to.file == 6 ? 5 : 3)};
         move(rook, moveTo);
     }
-}
-
-void Chess::clearSelected() {
-    clearLegalMovesFrame();
-    resetCellFrame(selectedCell);
-    selectedCell.set(-1, -1);
 }
 
 P_Color Chess::getOpponent() {
@@ -422,10 +398,6 @@ void Chess::expert_menu() {
             break;
         case 1:
             expertMode = true;
-            clearLegalMovesFrame();
-            if (selectedCell.rank != -1)
-                updateSelectedCellFrame();
-            updateCurrentCellFrame();
     }
 }
 
@@ -526,4 +498,17 @@ void Chess::binaryReadInt(ifstream &stream, int &data) const {
 
 void Chess::deleteSave() {
     remove("prevState.sav");
+}
+
+string Chess::timeToString(int seconds) {
+    int hour = seconds / 3600;
+    seconds %= 3600;
+    int minute = seconds / 60;
+    int second = seconds % 60;
+
+    stringstream stream;
+    stream << hour / 10 << hour % 10 << ':'
+           << minute / 10 << minute % 10 << ':'
+           << second / 10 << second % 10;
+    return stream.str();
 }
