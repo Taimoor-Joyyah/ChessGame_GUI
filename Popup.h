@@ -14,12 +14,12 @@ class Popup {
 public:
     int currentTopLine{};
 
-    explicit Popup(const string filename);
+    explicit Popup(const string &filename);
     LinkedList<string*> statements{};
     void pop();
 
 private:
-    void setStatements(const string filename);
+    void setStatements(const string &filename);
 };
 
 

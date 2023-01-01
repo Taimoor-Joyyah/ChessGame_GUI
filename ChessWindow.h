@@ -7,7 +7,6 @@
 
 #include "raylib.h"
 #include "Chess.h"
-//#include "LinkedList.h"
 
 class ChessWindow {
 public:
@@ -22,10 +21,31 @@ public:
     static void drawWindow();
 
     static void close();
+
 private:
+    static string timeToString(int seconds);
+
     static void unloadTexture();
+
     static void loadTextures();
+
     static int getTextureIndex(P_Color player, PieceType type);
+
+    static void drawMenu(Color &menuColor);
+
+    static void drawPopup(Color &menuColor);
+
+    static void drawEnding(Color &menuColor);
+
+    static void drawChess(Color &current, Color &selected, const Color &possible, const Color &capture, Color &header);
+
+    static void drawBackground();
+
+    static void drawHeaders(Color &header);
+
+    static void drawCellGuides(Color &selected, const Color &possible, const Color &capture);
+
+    static void drawPieces(Color &current);
 };
 
 #endif //CHESSGAME_GUI_CHESSWINDOW_H

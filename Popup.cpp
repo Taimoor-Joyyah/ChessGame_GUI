@@ -6,7 +6,7 @@
 #include "Popup.h"
 #include "ChessWindow.h"
 
-Popup::Popup(const string filename) {
+Popup::Popup(const string &filename) {
     setStatements(filename);
 }
 
@@ -30,7 +30,7 @@ void Popup::pop() {
     ChessWindow::popup = nullptr;
 }
 
-void Popup::setStatements(const string filename) {
+void Popup::setStatements(const string &filename) {
     ifstream file{filename};
     string statement;
     if (file.is_open()) {

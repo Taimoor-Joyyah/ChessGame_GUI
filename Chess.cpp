@@ -166,7 +166,7 @@ bool Chess::selectCell() {
 }
 
 bool Chess::changePlayer() {
-    currentPlayer = getOpponent();
+    currentPlayer = isWhite ? P_BLACK : P_WHITE;
     isWhite = !isWhite;
     ++session;
     return updateStatus();
@@ -187,11 +187,14 @@ bool Chess::updateStatus() {
             return false;
         }
     }
-    if (isOnlyKing(P_WHITE) && isOnlyKing(P_BLACK)) {
-        deadPositions.pop();
-        return false;
-    }
-    return true;
+
+    for (auto &rank: pieces)
+        for (auto piece: rank)
+            if (piece != nullptr && piece->getType() != KING) {
+                return true;
+            }
+    deadPositions.pop();
+    return false;
 }
 
 void Chess::addIfCastling() {
@@ -331,10 +334,6 @@ void Chess::castling(const Location &from, const Location &to) {
         Location moveTo{from.rank, (to.file == 6 ? 5 : 3)};
         move(rook, moveTo);
     }
-}
-
-P_Color Chess::getOpponent() {
-    return isWhite ? P_BLACK : P_WHITE;
 }
 
 Piece *Chess::getPiece(const Location &cell) {
@@ -498,17 +497,4 @@ void Chess::binaryReadInt(ifstream &stream, int &data) const {
 
 void Chess::deleteSave() {
     remove("prevState.sav");
-}
-
-string Chess::timeToString(int seconds) {
-    int hour = seconds / 3600;
-    seconds %= 3600;
-    int minute = seconds / 60;
-    int second = seconds % 60;
-
-    stringstream stream;
-    stream << hour / 10 << hour % 10 << ':'
-           << minute / 10 << minute % 10 << ':'
-           << second / 10 << second % 10;
-    return stream.str();
 }

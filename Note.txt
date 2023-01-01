@@ -130,3 +130,5 @@ pieces type and color
 + add headers
 + add pop
 + add ending /..
+
+* add press any key to play

@@ -13,7 +13,7 @@ class Ending {
 public:
     const string *text;
 
-    Ending(const string *text);
+    explicit Ending(const string *text);
     void setText(const string *text);
     void pop();
 };

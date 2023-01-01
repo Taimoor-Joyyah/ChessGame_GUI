@@ -18,7 +18,7 @@ using namespace std;
 
 class Chess {
 public:
-    Chess(bool isContinue);
+    explicit Chess(bool isContinue);
 
     ~Chess();
 
@@ -53,12 +53,8 @@ public:
 
     bool loaded = true;
 
-    static string timeToString(int seconds);
-
 private:
     Location *getKingLocation(Piece *pieceList[8][8], P_Color player);
-
-    P_Color getOpponent();
 
     Piece *getPiece(const Location &cell);
 
@@ -107,8 +103,6 @@ private:
     void binaryReadInt(ifstream &stream, int &data) const;
 
     // Rules Functions
-
-    bool isOnlyKing(P_Color player);
 
     bool isCheckOn(Piece *pieceList[8][8], Location *cell);
 

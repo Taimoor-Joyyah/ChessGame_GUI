@@ -106,7 +106,7 @@ bool Chess::isCheckOn(Piece *pieceList[8][8], Location *cell) {
     for (int rank = 0; rank < 8; ++rank)
         for (int file = 0; file < 8; ++file) {
             Piece *piece = pieceList[rank][file];
-            if (piece != nullptr && piece->getColor() == getOpponent()) {
+            if (piece != nullptr && piece->getColor() == (isWhite ? P_BLACK : P_WHITE)) {
                 LinkedList<Location *> list{};
                 getMoves(pieceList, {rank, file}, list, true);
                 if (list.contains(cell))
@@ -114,14 +114,4 @@ bool Chess::isCheckOn(Piece *pieceList[8][8], Location *cell) {
             }
         }
     return false;
-}
-
-bool Chess::isOnlyKing(P_Color player) {
-    for (auto &rank: pieces)
-        for (auto piece: rank)
-            if (piece != nullptr &&
-                piece->getColor() == player &&
-                piece->getType() != KING)
-                return false;
-    return true;
 }
