@@ -27,7 +27,7 @@ int Menu::selectOption() {
                 if (escapable)
                     currentOption = -1;
         }
-    } while (key != KEY_KP_5 && key != KEY_ESCAPE);
+    } while (key != KEY_KP_5 && (!escapable || key != KEY_ESCAPE));
     ChessWindow::menu = nullptr;
     return currentOption;
 }

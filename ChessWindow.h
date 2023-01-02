@@ -43,9 +43,9 @@ private:
 
     static void drawHeaders(Color &header);
 
-    static void drawCellGuides(Color &selected, const Color &possible, const Color &capture);
+    static void drawCellGuides(Color &current, Color &selected, const Color &possible, const Color &capture);
 
-    static void drawPieces(Color &current);
+    static void drawPieces();
 };
 
 #endif //CHESSGAME_GUI_CHESSWINDOW_H

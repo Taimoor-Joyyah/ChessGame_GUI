@@ -51,13 +51,12 @@ void ChessWindow::drawChess(Color &current, Color &selected,
                             const Color &possible, const Color &capture, Color &header) {
     if (game != nullptr) {
         drawHeaders(header);
-        drawCellGuides(selected, possible, capture);
-        drawPieces(current);
+        drawCellGuides(current, selected, possible, capture);
+        drawPieces();
     }
 }
 
-void ChessWindow::drawPieces(Color &current) {
-    DrawCircle(96 + 64 * game->currentCell.file, 96 + 64 * game->currentCell.rank, 22, current);
+void ChessWindow::drawPieces() {
     for (int rank = 0; rank < 8; ++rank) {
         for (int file = 0; file < 8; ++file) {
             Piece *piece = game->pieces[rank][file];
@@ -68,7 +67,7 @@ void ChessWindow::drawPieces(Color &current) {
     }
 }
 
-void ChessWindow::drawCellGuides(Color &selected, const Color &possible, const Color &capture) {
+void ChessWindow::drawCellGuides(Color &current, Color &selected, const Color &possible, const Color &capture) {
     if (game->selectedCell.rank != -1) {
         DrawCircle(96 + 64 * game->selectedCell.file, 96 + 64 * game->selectedCell.rank, 26, selected);
         Piece *piece = game->pieces[game->selectedCell.rank][game->selectedCell.file];
@@ -81,6 +80,7 @@ void ChessWindow::drawCellGuides(Color &selected, const Color &possible, const C
             }
         }
     }
+    DrawCircle(96 + 64 * game->currentCell.file, 96 + 64 * game->currentCell.rank, 22, current);
 }
 
 void ChessWindow::drawHeaders(Color &header) {
