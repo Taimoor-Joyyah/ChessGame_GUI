@@ -9,6 +9,7 @@ https://en.wikipedia.org/wiki/Chess
 Use NUMPAD arrows for movement and
 NUM 5 for selection
 Use ESC for pause menu during game
+Mouse can also be used
 
 <-< GAME >->
 The game is dual player game
