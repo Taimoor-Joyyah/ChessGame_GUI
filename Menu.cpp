@@ -13,8 +13,24 @@ Menu::Menu(string &&prompt, string *options, int optionCount, bool escapable)
 int Menu::selectOption() {
     currentOption = 0;
     ChessWindow::menu = this;
+    Vector2 mousePos;
     int key{};
+    bool mouseClicked = true;
     do {
+        mousePos = GetMousePosition();
+        auto delta = GetMouseDelta();
+        if ((((int) mousePos.y - 220) % 50) >= 0
+            && (((int) mousePos.y - 220) % 50) < 40 && mousePos.x >= 180 && mousePos.x < 460) {
+            if (delta.x != 0 || delta.y != 0) {
+                currentOption = ((int) mousePos.y - 220) / 50;
+            }
+            if (IsMouseButtonUp(MOUSE_BUTTON_LEFT))
+                mouseClicked = false;
+            else if (!mouseClicked && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                mouseClicked = true;
+                break;
+            }
+        }
         key = GetKeyPressed();
         switch (key) {
             case KEY_KP_8:

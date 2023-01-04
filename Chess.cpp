@@ -108,10 +108,30 @@ void Chess::startGame() {
     ChessWindow::game = this;
 
     time_t startTime = time(nullptr) - timePassed;
-    int key{};
+    Vector2 mousePos;
+    bool mouseClicked = true;
     while (true) {
-        key = GetKeyPressed();
-        switch (key) {
+        mousePos = GetMousePosition();
+        auto delta = GetMouseDelta();
+        if (mousePos.y >= 64 && mousePos.y < 576 && mousePos.x >= 64 && mousePos.x < 576) {
+            if (delta.x != 0 || delta.y != 0) {
+                int rank = mousePos.y / 64 - 1;
+                int file = mousePos.x / 64 - 1;
+                currentCell.set(rank, file);
+            }
+            if (IsMouseButtonUp(MOUSE_BUTTON_LEFT))
+                mouseClicked = false;
+            else if (!mouseClicked && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                if (!selectCell()) {
+                    ChessWindow::game = nullptr;
+                    return;
+                }
+                mouseClicked = true;
+            }
+        }
+
+
+        switch (GetKeyPressed()) {
             case KEY_KP_8:
                 currentCell.rank = currentCell.rank == 0 ? 7 : currentCell.rank - 1;
                 break;
@@ -125,9 +145,7 @@ void Chess::startGame() {
                 currentCell.file = (currentCell.file + 1) % 8;
                 break;
             case KEY_KP_5:
-                if (currentCell == selectedCell)
-                    selectedCell.set(-1, -1);
-                else if (!selectCell()) {
+                if (!selectCell()) {
                     ChessWindow::game = nullptr;
                     return;
                 }
@@ -146,6 +164,10 @@ void Chess::startGame() {
 }
 
 bool Chess::selectCell() {
+    if (currentCell == selectedCell) {
+        selectedCell.set(-1, -1);
+        return true;
+    }
     Piece *currentPiece = getPiece(currentCell);
     Piece *selectedPiece = (selectedCell.rank == -1) ? nullptr : getPiece(selectedCell);
 
