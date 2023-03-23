@@ -4,30 +4,11 @@ Semester Project
 COMSATS University
 Lahore Campus
 
-<-< GROUP MEMBERS >->
-Muhammad Taimoor (FA21-BSE-134)
-Tabarak Sohail (FA21-BSE-105)
-Arsal Farooq (FA21-BSE-047)
+Semester 3
 
-<-< LEADER >->
+<-< Programmer >->
 Muhammad Taimoor
-
-<-< CONTRIBUTION >->
-
-MUHAMMAD TAIMOOR
-Logic Building
-Main
-Chess Class
-Code Inspection
-
-TABARAK SOHAIL
-GUI Designing
-LinkedList
-
-ARSAL FAROOQ
-Menu
-Popup
-Ending
+FA21-BSE-134
 
 <-< HOW TO PLAY CHESS >->
 https://www.youtube.com/
