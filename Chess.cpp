@@ -288,6 +288,7 @@ void Chess::move(Location &from, Location &to) {
 
     evaluatePoints(toPiece);
 
+    ChessWindow::animation = new ChessWindow::Animation{fromPiece, 30, from, to};
     setPiece(from, nullptr);
     setPiece(to, fromPiece);
 

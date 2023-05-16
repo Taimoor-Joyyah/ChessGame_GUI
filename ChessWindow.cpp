@@ -13,11 +13,12 @@ Chess *ChessWindow::game = nullptr;
 Menu *ChessWindow::menu = nullptr;
 Popup *ChessWindow::popup = nullptr;
 Ending *ChessWindow::ending = nullptr;
+ChessWindow::Animation *ChessWindow::animation = nullptr;
 
 
 void ChessWindow::drawWindow() {
     InitWindow(640, 640, "CHESS GAME");
-    SetTargetFPS(25);
+    SetTargetFPS(60);
     SetExitKey(KEY_F4);
     loadTextures();
 
@@ -60,9 +61,18 @@ void ChessWindow::drawPieces() {
     for (int rank = 0; rank < 8; ++rank) {
         for (int file = 0; file < 8; ++file) {
             Piece *piece = game->pieces[rank][file];
-            if (piece != nullptr)
-                DrawTexture(textures[getTextureIndex(piece->getColor(), piece->getType())], 70 + 64 * file,
-                            70 + 64 * rank, WHITE);
+            if (piece != nullptr) {
+                float rank_ = rank;
+                float file_ = file;
+                if (animation != nullptr && piece == animation->piece) {
+                    float pc = (float)++animation->step / animation->totalStep;
+                    rank_ = animation->from.rank + (animation->to.rank - animation->from.rank) * pc;
+                    file_ = animation->from.file + (animation->to.file - animation->from.file) * pc;
+                    if (animation->step == animation->totalStep) animation = nullptr;
+                }
+                DrawTexture(textures[getTextureIndex(piece->getColor(), piece->getType())],(int)(64.0 * file_ + 70.0),
+                            (int)(64.0 * rank_ + 70.0), WHITE);
+            }
         }
     }
 }

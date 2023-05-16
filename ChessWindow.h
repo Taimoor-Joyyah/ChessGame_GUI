@@ -22,7 +22,15 @@ public:
 
     static void close();
 
+    static struct Animation {
+        Piece *piece;
+        int totalStep;
+        Location from;
+        Location to;
+        int step = 0;
+    } *animation;
 private:
+
     static string timeToString(int seconds);
 
     static void unloadTexture();
