@@ -8,8 +8,10 @@
 #include "Chess.h"
 #include "ChessWindow.h"
 #include "raylib.h"
+#include "Engine.h"
 
 Chess::Chess(bool isContinue) {
+    Engine::setEngine(reinterpret_cast<Piece ***>(pieces), &currentPlayer, 0);
     if (isContinue) {
         loaded = load();
     } else {
@@ -250,6 +252,7 @@ bool Chess::simulate() {
             Piece *piece = tempPieces[rank][file];
             if (piece != nullptr && piece->getColor() == currentPlayer) {
                 LinkedList<Location *> &moves = piece->getLegalMoves();
+                moves.clear();
                 getMoves(tempPieces, {rank, file}, moves, false);
                 tempPieces[rank][file] = nullptr;
                 moves.iteratorReset();

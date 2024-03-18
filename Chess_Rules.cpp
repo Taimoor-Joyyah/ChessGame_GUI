@@ -5,7 +5,6 @@
 #include "Chess.h"
 
 void Chess::getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating) {
-    moves.clear();
     Piece *currentPiece = getPiece(cell);
     switch (currentPiece->getType()) {
         case ROOK:
