@@ -5,13 +5,13 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
+#include <unistd.h>
 #include "Chess.h"
 #include "ChessWindow.h"
 #include "raylib.h"
 #include "Engine.h"
 
 Chess::Chess(bool isContinue) {
-    Engine::setEngine(reinterpret_cast<Piece ***>(pieces), &currentPlayer, 0);
     if (isContinue) {
         loaded = load();
     } else {
@@ -78,27 +78,27 @@ Ending Chess::stalemate{new string[]{"DRAW", "STALEMATE"}};
 Ending Chess::deadPositions{new string[]{"DRAW", "DEAD POSITIONS"}};
 
 void Chess::setupBoard() {
-    setPiece({0, 0}, new Piece{P_BLACK, ROOK});
-    setPiece({0, 1}, new Piece{P_BLACK, KNIGHT});
-    setPiece({0, 2}, new Piece{P_BLACK, BISHOP});
-    setPiece({0, 3}, new Piece{P_BLACK, QUEEN});
-    setPiece({0, 4}, new Piece{P_BLACK, KING});
-    setPiece({0, 5}, new Piece{P_BLACK, BISHOP});
-    setPiece({0, 6}, new Piece{P_BLACK, KNIGHT});
-    setPiece({0, 7}, new Piece{P_BLACK, ROOK});
+    setPiece(pieces, {0, 0}, new Piece{P_BLACK, ROOK});
+    setPiece(pieces, {0, 1}, new Piece{P_BLACK, KNIGHT});
+    setPiece(pieces, {0, 2}, new Piece{P_BLACK, BISHOP});
+    setPiece(pieces, {0, 3}, new Piece{P_BLACK, QUEEN});
+    setPiece(pieces, {0, 4}, new Piece{P_BLACK, KING});
+    setPiece(pieces, {0, 5}, new Piece{P_BLACK, BISHOP});
+    setPiece(pieces, {0, 6}, new Piece{P_BLACK, KNIGHT});
+    setPiece(pieces, {0, 7}, new Piece{P_BLACK, ROOK});
 
-    setPiece({7, 0}, new Piece{P_WHITE, ROOK});
-    setPiece({7, 1}, new Piece{P_WHITE, KNIGHT});
-    setPiece({7, 2}, new Piece{P_WHITE, BISHOP});
-    setPiece({7, 3}, new Piece{P_WHITE, QUEEN});
-    setPiece({7, 4}, new Piece{P_WHITE, KING});
-    setPiece({7, 5}, new Piece{P_WHITE, BISHOP});
-    setPiece({7, 6}, new Piece{P_WHITE, KNIGHT});
-    setPiece({7, 7}, new Piece{P_WHITE, ROOK});
+    setPiece(pieces, {7, 0}, new Piece{P_WHITE, ROOK});
+    setPiece(pieces, {7, 1}, new Piece{P_WHITE, KNIGHT});
+    setPiece(pieces, {7, 2}, new Piece{P_WHITE, BISHOP});
+    setPiece(pieces, {7, 3}, new Piece{P_WHITE, QUEEN});
+    setPiece(pieces, {7, 4}, new Piece{P_WHITE, KING});
+    setPiece(pieces, {7, 5}, new Piece{P_WHITE, BISHOP});
+    setPiece(pieces, {7, 6}, new Piece{P_WHITE, KNIGHT});
+    setPiece(pieces, {7, 7}, new Piece{P_WHITE, ROOK});
 
     for (int i = 0; i < 8; ++i) {
-        setPiece({1, i}, new Piece{P_BLACK, PAWN});
-        setPiece({6, i}, new Piece{P_WHITE, PAWN});
+        setPiece(pieces, {1, i}, new Piece{P_BLACK, PAWN});
+        setPiece(pieces, {6, i}, new Piece{P_WHITE, PAWN});
     }
 }
 
@@ -170,8 +170,8 @@ bool Chess::selectCell() {
         selectedCell.set(-1, -1);
         return true;
     }
-    Piece *currentPiece = getPiece(currentCell);
-    Piece *selectedPiece = (selectedCell.rank == -1) ? nullptr : getPiece(selectedCell);
+    Piece *currentPiece = getPiece(pieces, currentCell);
+    Piece *selectedPiece = (selectedCell.rank == -1) ? nullptr : getPiece(pieces, selectedCell);
 
     if (selectedPiece != nullptr && selectedPiece->getLegalMoves().contains(&currentCell)) {
         Location temp{selectedCell.rank, selectedCell.file};
@@ -180,6 +180,14 @@ bool Chess::selectCell() {
         if (!changePlayer()) {
             deleteSave();
             return false;
+        }
+        if (currentPlayer == P_BLACK) {
+            Move engineMove = Engine::evaluateBestMove(pieces, currentPlayer, enginePower);
+            move(engineMove.fromLocation, engineMove.toLocation);
+            if (!changePlayer()) {
+                deleteSave();
+                return false;
+            }
         }
     } else if (currentPiece != nullptr && currentPiece->getColor() == currentPlayer) {
         if (!currentPiece->getLegalMoves().isEmpty())
@@ -227,9 +235,9 @@ void Chess::addIfCastling() {
         int king_rank = isWhite ? 7 : 0;
         for (int i = -1; i <= 1; i += 2) {
             if (!castlingRule[castlingKingIndex + i] &&
-                ((i == 1) ? getPiece({king_rank, 6}) == nullptr :
-                 getPiece({king_rank, 1}) == getPiece({king_rank, 2}))) {
-                Piece *king = getPiece(*getKingLocation(pieces, currentPlayer));
+                ((i == 1) ? getPiece(pieces, {king_rank, 6}) == nullptr :
+                 getPiece(pieces, {king_rank, 1}) == getPiece(pieces, {king_rank, 2}))) {
+                Piece *king = getPiece(pieces, *getKingLocation(pieces, currentPlayer));
                 if (king->getLegalMoves().contains(new Location{king_rank, 4 + i}) &&
                     !isCheckOn(pieces, new Location{king_rank, 4 + i * 2})) {
                     king->getLegalMoves().insert(new Location{king_rank, 4 + i * 2});
@@ -253,7 +261,7 @@ bool Chess::simulate() {
             if (piece != nullptr && piece->getColor() == currentPlayer) {
                 LinkedList<Location *> &moves = piece->getLegalMoves();
                 moves.clear();
-                getMoves(tempPieces, {rank, file}, moves, false);
+                getMoves(tempPieces, {rank, file}, moves, false, &session, &enPassantSession, &enPassantTo);
                 tempPieces[rank][file] = nullptr;
                 moves.iteratorReset();
                 while (!moves.isIteratorEnd()) {
@@ -277,8 +285,8 @@ void Chess::move(Location &selected) {
 }
 
 void Chess::move(Location &from, Location &to) {
-    Piece *fromPiece = getPiece(from);
-    Piece *toPiece = getPiece(to);
+    Piece *fromPiece = getPiece(pieces, from);
+    Piece *toPiece = getPiece(pieces, to);
 
     castling(from, to);
     evaluateCastling(from);
@@ -292,8 +300,9 @@ void Chess::move(Location &from, Location &to) {
     evaluatePoints(toPiece);
 
     ChessWindow::animation = new ChessWindow::Animation{fromPiece, 30, from, to};
-    setPiece(from, nullptr);
-    setPiece(to, fromPiece);
+    setPiece(pieces, from, nullptr);
+    setPiece(pieces, to, fromPiece);
+    usleep(500000);
 
     delete toPiece;
 }
@@ -321,7 +330,7 @@ void Chess::enPassantMove(const Location &to) {
     if (session == enPassantSession + 1) {
         int rank = isWhite ? to.rank + 1 : to.rank - 1;
         if (enPassantTo.equals(rank, to.file)) {
-            setPiece(enPassantTo, nullptr);
+            setPiece(pieces, enPassantTo, nullptr);
             enPassantTo.set(-1, -1);
             enPassantSession = -1;
             (isWhite ? whitePoints : blackPoints) += 1;
@@ -355,23 +364,23 @@ void Chess::promotion(const Location &to, Piece *fromPiece) {
 }
 
 void Chess::castling(const Location &from, const Location &to) {
-    if (getPiece(from)->getType() == KING && abs(from.file - to.file) == 2) {
+    if (getPiece(pieces, from)->getType() == KING && abs(from.file - to.file) == 2) {
         Location rook{from.rank, (to.file == 6 ? 7 : 0)};
         Location moveTo{from.rank, (to.file == 6 ? 5 : 3)};
         move(rook, moveTo);
     }
 }
 
-Piece *Chess::getPiece(const Location &cell) {
+Piece *Chess::getPiece(Piece *pieces[8][8], const Location &cell) {
     return pieces[cell.rank][cell.file];
 }
 
-void Chess::setPiece(const Location &cell, Piece *piece) {
+void Chess::setPiece(Piece *pieces[8][8], const Location &cell, Piece *piece) {
     pieces[cell.rank][cell.file] = piece;
 }
 
 void Chess::evaluateCastling(const Location &cell) {
-    Piece *piece = getPiece(cell);
+    Piece *piece = getPiece(pieces, cell);
     int castlingIndex = isWhite ? 4 : 1;
     if (piece->getType() == KING)
         castlingRule[castlingIndex] = true;
@@ -450,7 +459,7 @@ void Chess::save() {
         }
         for (int rank = 0; rank < 8; ++rank) {
             for (int file = 0; file < 8; ++file) {
-                Piece *piece = getPiece({rank, file});
+                Piece *piece = getPiece(pieces, {rank, file});
                 if (piece != nullptr) {
                     temp = (piece->getColor() == P_WHITE ? 1 : 0);
                     binaryWriteInt(stream, temp);
@@ -501,9 +510,9 @@ bool Chess::load() {
 
                 if (data != -1) {
                     auto type = (PieceType) data;
-                    setPiece({rank, file}, new Piece{player, type});
+                    setPiece(pieces, {rank, file}, new Piece{player, type});
                 } else
-                    setPiece({rank, file}, nullptr);
+                    setPiece(pieces, {rank, file}, nullptr);
             }
         }
         stream.close();

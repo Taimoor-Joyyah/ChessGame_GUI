@@ -53,13 +53,16 @@ public:
 
     bool loaded = true;
 
+    int enginePower = 5; // Default Engine Power
+
 private:
-    Location *getKingLocation(Piece *pieceList[8][8], P_Color player);
+    static Location *getKingLocation(Piece *pieceList[8][8], P_Color player);
 
-    Piece *getPiece(const Location &cell);
+public:
+    static Piece *getPiece(Piece *pieces[8][8], const Location &cell);
 
-    void setPiece(const Location &cell, Piece *piece);
-
+    static void setPiece(Piece *pieces[8][8], const Location &cell, Piece *piece);
+private:
     void setupBoard();
 
     void expert_menu();
@@ -106,14 +109,19 @@ private:
 
     bool isCheckOn(Piece *pieceList[8][8], Location *cell);
 
-    void getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
+public:
+    static void getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating,
+                         const int *session, const int *enPassantSession, Location *enPassantTo);
+private:
+    static void
+    addStraight(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
 
-    void addStraight(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
+    static void
+    addDiagonal(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
 
-    void addDiagonal(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);
-
-    bool addLocation(Piece *pieceList[8][8], int rank, int file,
-                     const Piece *currentPiece, LinkedList<Location *> &moves, bool isSimulating, bool couldLeap);
+    static bool addLocation(Piece *pieceList[8][8], int rank, int file,
+                            const Piece *currentPiece, LinkedList<Location *> &moves, bool isSimulating,
+                            bool couldLeap);
 };
 
 

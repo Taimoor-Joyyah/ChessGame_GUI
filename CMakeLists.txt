@@ -29,8 +29,6 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
     endif ()
 endif ()
 
-add_executable(ChessGame_GUI main.cpp LinkedList.h Menu.cpp Menu.h Chess.cpp Chess.h Enum.h Location.cpp Location.h Piece.cpp Piece.h Chess_Rules.cpp Popup.cpp Popup.h Ending.cpp Ending.h ChessWindow.cpp ChessWindow.h Engine.cpp Engine.h
-        GameState.cpp
-        GameState.h)
+add_executable(ChessGame_GUI main.cpp LinkedList.h Menu.cpp Menu.h Chess.cpp Chess.h Enum.h Location.cpp Location.h Piece.cpp Piece.h Chess_Rules.cpp Popup.cpp Popup.h Ending.cpp Ending.h ChessWindow.cpp ChessWindow.h Engine.cpp Engine.h)
 
 target_link_libraries(${PROJECT_NAME} raylib)

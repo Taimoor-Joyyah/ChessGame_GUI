@@ -4,8 +4,9 @@
 
 #include "Chess.h"
 
-void Chess::getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating) {
-    Piece *currentPiece = getPiece(cell);
+void Chess::getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating,
+                     const int *session, const int *enPassantSession, Location *enPassantTo) {
+    Piece *currentPiece = getPiece(pieceList, cell);
     switch (currentPiece->getType()) {
         case ROOK:
             addStraight(pieceList, cell, moves, isSimulating);
@@ -38,7 +39,7 @@ void Chess::getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Lo
                 rank = cell.rank + type * (i + 1);
                 file = cell.file;
                 if (!isSimulating && (i == 0 || cell.rank == (7 + type) % 7)) {
-                    piece = getPiece({rank, file});
+                    piece = getPiece(pieceList, {rank, file});
                     if (piece == nullptr)
                         moves.insert(new Location{rank, file});
                     else
@@ -49,9 +50,9 @@ void Chess::getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Lo
                 rank = cell.rank + type;
                 file = cell.file - 1 + i * 2;
                 if (file >= 0 && file <= 7) {
-                    piece = getPiece({rank, file});
+                    piece = getPiece(pieceList, {rank, file});
                     if (isSimulating || ((piece != nullptr && piece->getColor() != currentPiece->getColor()) ||
-                                         (session == enPassantSession + 1 && enPassantTo.equals(cell.rank, file)))) {
+                                         (session && *session == *enPassantSession + 1 && enPassantTo->equals(cell.rank, file)))) {
                         moves.insert(new Location{rank, file});
                     }
                 }
@@ -62,7 +63,7 @@ void Chess::getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Lo
 
 void
 Chess::addStraight(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating) {
-    Piece *currentPiece = getPiece(cell);
+    Piece *currentPiece = getPiece(pieceList, cell);
     for (int rank = cell.rank + 1; rank < 8 &&
             addLocation(pieceList, rank, cell.file, currentPiece, moves, isSimulating, false); ++rank);
     for (int rank = cell.rank - 1; rank >= 0 &&
@@ -75,7 +76,7 @@ Chess::addStraight(Piece *pieceList[8][8], const Location &cell, LinkedList<Loca
 
 void
 Chess::addDiagonal(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating) {
-    Piece *currentPiece = getPiece(cell);
+    Piece *currentPiece = getPiece(pieceList, cell);
     for (int rank = cell.rank + 1, file = cell.file + 1;
          rank < 8 && file < 8 && addLocation(pieceList, rank, file, currentPiece, moves, isSimulating, false); ++rank, ++file);
     for (int rank = cell.rank + 1, file = cell.file - 1;
@@ -107,7 +108,7 @@ bool Chess::isCheckOn(Piece *pieceList[8][8], Location *cell) {
             Piece *piece = pieceList[rank][file];
             if (piece != nullptr && piece->getColor() == (isWhite ? P_BLACK : P_WHITE)) {
                 LinkedList<Location *> list{};
-                getMoves(pieceList, {rank, file}, list, true);
+                getMoves(pieceList, {rank, file}, list, true, &session, &enPassantSession, &enPassantTo);
                 if (list.contains(cell))
                     return true;
             }

@@ -3,112 +3,148 @@
 //
 
 #include "Engine.h"
-#include <limits>
-#include <vector>
+#include "Chess.h"
+#include <thread>
+#include <algorithm>
 
-Piece ***Engine::pieceList = nullptr;
-P_Color *Engine::currentPlayer = nullptr;
-int Engine::power = 0;
+Move Engine::evaluateBestMove(Piece *pieces[8][8], P_Color player, int power) {
+    GameState gameState{pieces, player};
 
-void Engine::setEngine(Piece ***pieceList, P_Color *currentPlayer, int power) {
-    Engine::pieceList = pieceList;
-    Engine::currentPlayer = currentPlayer;
-    Engine::power = power;
+    std::vector<Move> allPossibleMoves = getAllPossibleMoves(gameState);
+    int totalMoves = allPossibleMoves.size();
+    int scores[totalMoves];
+
+    std::thread threads[totalMoves];
+    for (int i = 0; i < totalMoves; i++) {
+        threads[i] = std::thread([&, i] {
+            scores[i] = minimax(movePiece(&gameState, allPossibleMoves[i]), power - 1, INT_MIN, INT_MAX, false);
+        });
+    }
+
+    for (auto &th: threads)
+        th.join();
+
+    std::vector<Move> bestMoves;
+    int maxScore = scores[0];
+    for (int i = 1; i < totalMoves; i++)
+        if (scores[i] > maxScore)
+            maxScore = scores[i];
+    for (int i = 0; i < totalMoves; i++)
+        if (scores[i] == maxScore)
+            bestMoves.push_back(allPossibleMoves[i]);
+    return bestMoves[rand() % bestMoves.size()];
 }
 
-void Engine::setPower(int power) {
-    Engine::power = power;
+int Engine::minimax(GameState gameState, int depth, int alpha, int beta, bool isMaximizingPlayer) {
+    if (depth == 0 || isGameOver(gameState)) {
+        return evaluateBoard(gameState);
+    }
+
+    int evalualtion;
+    if (isMaximizingPlayer) {
+        evalualtion = INT_MIN;
+        for (Move move: getAllPossibleMoves(gameState)) {
+            int eval = minimax(movePiece(&gameState, move), depth - 1, alpha, beta, false);
+            evalualtion = std::max(evalualtion, eval);
+            alpha = std::max(alpha, eval);
+            if (beta <= alpha) break;
+        }
+    } else {
+        evalualtion = INT_MAX;
+        for (Move move: getAllPossibleMoves(gameState)) {
+            int eval = minimax(movePiece(&gameState, move), depth - 1, alpha, beta, true);
+            evalualtion = std::min(evalualtion, eval);
+            beta = std::min(beta, eval);
+            if (beta <= alpha) break;
+        }
+    }
+
+    return evalualtion;
 }
 
-//Move Engine::evaluateBestMove() {
-//    if (pieceList == nullptr || currentPlayer == nullptr) {
-//        return Move{nullptr, P_WHITE};
-//    }
-//
-//    std::vector<Move> allPossibleMoves = getAllPossibleMoves(gameState, this);
-//    int totalMoves = allPossibleMoves.size();
-//    std::vector<int> scores(totalMoves);
-//
-//    std::vector<std::thread> threads;
-//    std::mutex firstCheck;
-//    for (int i = 0; i < totalMoves; i++) {
-//        threads.push_back(std::thread([&, i] {
-//            scores[i] = minimax(movePiece(gameState, allPossibleMoves[i]), depth - 1, INT_MIN, INT_MAX, false);
-//        }));
-//    }
-//    for (auto &th: threads) th.join();
-//
-//    std::vector<Move> bestMoves;
-//    int maxScore = *std::max_element(scores.begin(), scores.end());
-//    for (int i = 0; i < totalMoves; i++) {
-//        if (scores[i] == maxScore) {
-//            bestMoves.push_back(allPossibleMoves[i]);
-//        }
-//    }
-//
-//    return bestMoves;
-//}
-//
-//int Engine::minimax(GameState gameState, int depth, int alpha, int beta, bool isMaximizingPlayer) {
-//    if (depth == 0 || gameState.isGameOver()) {
-//        return evaluateBoard(gameState);
-//    }
-//
-//    int evalualtion;
-//    if (isMaximizingPlayer) {
-//        evalualtion = INT_MIN;
-//        for (Move move: getAllPossibleMoves(gameState, gameState.currentPlayer())) {
-//            int eval = minimax(movePiece(gameState, move), depth - 1, alpha, beta, false);
-//            evalualtion = std::max(evalualtion, eval);
-//            alpha = std::max(alpha, eval);
-//            if (beta <= alpha) break;
-//        }
-//    } else {
-//        evalualtion = INT_MAX;
-//        for (Move move: getAllPossibleMoves(gameState, gameState.currentPlayer())) {
-//            int eval = minimax(movePiece(gameState, move), depth - 1, alpha, beta, true);
-//            evalualtion = std::min(evalualtion, eval);
-//            beta = std::min(beta, eval);
-//            if (beta <= alpha) break;
-//        }
-//    }
-//
-//    return evalualtion;
-//}
-//
-//
-//GameState Engine::movePiece(GameState gameState, Move move) {
-//    GameState newState = gameState.clone(gameState.currentPlayer(), gameState.opponentPlayer());
-//    Piece piece = gameState.getPiece(move.fromRow(), move.fromCol());
-//    newState.setPiece(move.fromRow(), move.fromCol(), NULL);
-//    newState.setPiece(move.toRow(), move.toCol(), piece);
-//    newState.nextPlayer();
-//    return newState;
-//}
-//
-//
-//std::vector<Move> Engine::getAllPossibleMoves(GameState gameState, P_Color *player) {
-//    std::vector<Move> moves;
-//    for (GameState::PiecePosition piecePosition: gameState.getPieces(player)) {
-//        std::vector<Move> tmpMoves = gameState.getAllValidMove(piecePosition.piece(), piecePosition.row(),
-//                                                               piecePosition.col());
-//        moves.insert(moves.end(), tmpMoves.begin(), tmpMoves.end());
-//    }
-//    return moves;
-//}
-//
-//
-//int Engine::evaluateBoard(GameState gameState) {
-//    int score = 0;
-//    std::vector<int> pieceValue = {200, 9, 3, 3, 5, 1};
-//    for (int row = 1; row <= 8; row++) {
-//        for (int col = 1; col <= 8; col++) {
-//            Piece *piece = gameState.getPiece(row, col);
-//            if (piece != nullptr) {
-//                int value = pieceValue[piece->getType().ordinal()];
-//                score += (piece->getPlayer() == this) ? value : -value;
-//            }
-//        }
-//    }
-//    return score;
-//}
+
+GameState Engine::movePiece(GameState *gameState, Move move) {
+    GameState newState = {gameState->pieces, gameState->player};
+    Piece *piece = Chess::getPiece(newState.pieces, move.fromLocation);
+    Chess::setPiece(newState.pieces, move.fromLocation, nullptr);
+    Chess::setPiece(newState.pieces, move.toLocation, piece);
+
+    newState.player = newState.player == P_WHITE ? P_BLACK : P_WHITE;
+    return newState;
+}
+
+
+std::vector<Move> Engine::getAllPossibleMoves(GameState &gameState) {
+    std::vector<Move> moves;
+    for (Location position: gameState.getPieces(gameState.player)) {
+        LinkedList<Location *> validPositions{};
+        Chess::getMoves(gameState.pieces, position, validPositions, false, nullptr, nullptr, nullptr);
+        for (int i = 0; i < validPositions.size(); ++i)
+            moves.emplace_back(position, *validPositions.get(i));
+    }
+    return moves;
+}
+
+
+int Engine::evaluateBoard(GameState &gameState) {
+    int score = 0;
+    for (int row = 0; row < 8; row++) {
+        for (int col = 0; col < 8; col++) {
+            Piece *piece = Chess::getPiece(gameState.pieces, {row, col});
+            if (piece != nullptr) {
+                int value;
+                switch (piece->getType()) {
+                    case KING:
+                        value = 200;
+                        break;
+                    case QUEEN:
+                        value = 9;
+                        break;
+                    case BISHOP:
+                    case KNIGHT:
+                        value = 5;
+                        break;
+                    case ROOK:
+                        value = 3;
+                        break;
+                    case PAWN:
+                        value = 1;
+                        break;
+                }
+                score += (piece->getColor() == P_WHITE) ? -value : value;
+            }
+        }
+    }
+    return score;
+}
+
+bool Engine::isGameOver(GameState &state) {
+    for (auto &pieceRow: state.pieces) {
+        for (auto &piece: pieceRow) {
+            if (piece != nullptr && piece->getType() == KING &&
+                piece->getColor() == state.player)
+                return false;
+        }
+    }
+    return true;
+}
+
+GameState::GameState(Piece *pieces[8][8], P_Color player) : player(player) {
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            this->pieces[i][j] = pieces[i][j];
+        }
+    }
+}
+
+std::vector<Location> GameState::getPieces(P_Color _player) {
+    std::vector<Location> positions;
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            Piece *piece = Chess::getPiece(pieces, {i, j});
+            if (piece != nullptr && piece->getColor() == _player)
+                positions.emplace_back(i, j);
+        }
+    }
+    return positions;
+}
