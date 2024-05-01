@@ -89,7 +89,8 @@ std::vector<Move> Engine::getAllPossibleMoves(GameState &gameState) {
 }
 
 int Engine::evaluateBoard(GameState &gameState) {
-    int score = 0;
+    int whiteScore = 0;
+    int blackScore = 0;
     for (int row = 0; row < 8; row++) {
         for (int col = 0; col < 8; col++) {
             Piece *piece = Chess::getPiece(gameState.pieces, {row, col});
@@ -113,11 +114,19 @@ int Engine::evaluateBoard(GameState &gameState) {
                         value = 1;
                         break;
                 }
-                score += piece->getColor() == gameState.player ? value : -value;
+
+                if (piece->getColor() == P_WHITE)
+                    whiteScore += value;
+                if (piece->getColor() == P_BLACK)
+                    blackScore += value;
             }
         }
     }
-    return score;
+
+    if (gameState.player == P_BLACK)
+        return whiteScore - blackScore;
+
+    return blackScore - whiteScore;
 }
 
 bool Engine::isGameOver(GameState &state) {

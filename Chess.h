@@ -20,9 +20,13 @@ class Chess {
 public:
     explicit Chess(bool isContinue);
 
+    Chess( bool isContinue, int mode, P_Type whiteType, P_Type blackType, int whitePower, int blackPower);
+
     ~Chess();
 
     void startGame();
+
+    bool cpuMove();
 
     Piece *pieces[8][8]{};
     static Menu pauseMenu;
@@ -53,7 +57,13 @@ public:
 
     bool loaded = true;
 
-    int enginePower = 5; // Default Engine Power
+    int mode;
+
+    P_Type whiteType;
+    P_Type blackType;
+
+    int whitePower = 0;
+    int blackPower = 0;
 
 private:
     static Location *getKingLocation(Piece *pieceList[8][8], P_Color player);

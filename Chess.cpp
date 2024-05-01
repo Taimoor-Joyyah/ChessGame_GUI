@@ -11,7 +11,11 @@
 #include "raylib.h"
 #include "Engine.h"
 
-Chess::Chess(bool isContinue) {
+Chess::Chess(bool isContinue): Chess(isContinue, 0, P_HUMAN, P_CPU, 0, 0) {
+}
+
+Chess::Chess(bool isContinue, int mode, P_Type whiteType, P_Type blackType, int whitePower, int blackPower)
+    : mode(mode), whiteType(whiteType), blackType(blackType), whitePower(whitePower), blackPower(blackPower) {
     if (isContinue) {
         loaded = load();
     } else {
@@ -27,48 +31,48 @@ Chess::~Chess() {
 }
 
 Menu Chess::quitMenu{
-        "QUIT TO MENU",
-        new string[]{
-                "No",
-                "Yes"
-        },
-        2,
-        true
+    "QUIT TO MENU",
+    new string[]{
+        "No",
+        "Yes"
+    },
+    2,
+    true
 };
 
 Menu Chess::pauseMenu{
-        "PAUSE MENU",
-        new string[]{
-                "Continue",
-                "Expert Mode",
-                "Save",
-                "Help",
-                "Quit"
-        },
-        5,
-        true
+    "PAUSE MENU",
+    new string[]{
+        "Continue",
+        "Expert Mode",
+        "Save",
+        "Help",
+        "Quit"
+    },
+    5,
+    true
 };
 
 Menu Chess::promotionMenu{
-        "PROMOTION",
-        new string[]{
-                "Queen",
-                "Rook",
-                "Bishop",
-                "Knight"
-        },
-        4,
-        false
+    "PROMOTION",
+    new string[]{
+        "Queen",
+        "Rook",
+        "Bishop",
+        "Knight"
+    },
+    4,
+    false
 };
 
 Menu Chess::expertMenu{
-        "EXPERT MODE",
-        new string[]{
-                "No",
-                "Yes"
-        },
-        2,
-        true
+    "EXPERT MODE",
+    new string[]{
+        "No",
+        "Yes"
+    },
+    2,
+    true
 };
 
 Popup Chess::help{"../Help.txt"};
@@ -108,6 +112,25 @@ void Chess::startGame() {
     updateStatus();
 
     ChessWindow::game = this;
+
+    if (mode == 1 &&
+            (currentPlayer == P_WHITE && whiteType == P_CPU ||
+             currentPlayer == P_BLACK && blackType == P_CPU) &&
+            !cpuMove()) {
+        usleep(1000000);
+        ChessWindow::game = nullptr;
+        return;
+    }
+
+    if (mode == 2) {
+        while (true) {
+            usleep(2000000);
+            if (!cpuMove()) {
+                ChessWindow::game = nullptr;
+                return;
+            }
+        }
+    }
 
     time_t startTime = time(nullptr) - timePassed;
     Vector2 mousePos;
@@ -165,13 +188,23 @@ void Chess::startGame() {
     }
 }
 
+bool Chess::cpuMove() {
+    Move engineMove = Engine::evaluateBestMove(pieces, currentPlayer, blackPower);
+    move(engineMove.fromLocation, engineMove.toLocation);
+    if (!changePlayer()) {
+        deleteSave();
+        return false;
+    }
+    return true;
+}
+
 bool Chess::selectCell() {
     if (currentCell == selectedCell) {
         selectedCell.set(-1, -1);
         return true;
     }
     Piece *currentPiece = getPiece(pieces, currentCell);
-    Piece *selectedPiece = (selectedCell.rank == -1) ? nullptr : getPiece(pieces, selectedCell);
+    Piece *selectedPiece = selectedCell.rank == -1 ? nullptr : getPiece(pieces, selectedCell);
 
     if (selectedPiece != nullptr && selectedPiece->getLegalMoves().contains(&currentCell)) {
         Location temp{selectedCell.rank, selectedCell.file};
@@ -181,14 +214,12 @@ bool Chess::selectCell() {
             deleteSave();
             return false;
         }
-        if (currentPlayer == P_BLACK) {
-            Move engineMove = Engine::evaluateBestMove(pieces, currentPlayer, enginePower);
-            move(engineMove.fromLocation, engineMove.toLocation);
-            if (!changePlayer()) {
-                deleteSave();
-                return false;
-            }
-        }
+
+        if (mode == 1 &&
+            (currentPlayer == P_WHITE && whiteType == P_CPU ||
+             currentPlayer == P_BLACK && blackType == P_CPU) &&
+            !cpuMove())
+            return false;
     } else if (currentPiece != nullptr && currentPiece->getColor() == currentPlayer) {
         if (!currentPiece->getLegalMoves().isEmpty())
             selectedCell.set(currentCell.rank, currentCell.file);
@@ -214,10 +245,10 @@ bool Chess::updateStatus() {
             checkmate.setText(new string[]{"CHECKMATE", isWhite ? "BLACK WON" : "WHITE WON"});
             checkmate.pop();
             return false;
-        } else {
-            stalemate.pop();
-            return false;
         }
+
+        stalemate.pop();
+        return false;
     }
 
     for (auto &rank: pieces)
@@ -235,8 +266,9 @@ void Chess::addIfCastling() {
         int king_rank = isWhite ? 7 : 0;
         for (int i = -1; i <= 1; i += 2) {
             if (!castlingRule[castlingKingIndex + i] &&
-                ((i == 1) ? getPiece(pieces, {king_rank, 6}) == nullptr :
-                 getPiece(pieces, {king_rank, 1}) == getPiece(pieces, {king_rank, 2}))) {
+                (i == 1
+                     ? getPiece(pieces, {king_rank, 6}) == nullptr
+                     : getPiece(pieces, {king_rank, 1}) == getPiece(pieces, {king_rank, 2}))) {
                 Piece *king = getPiece(pieces, *getKingLocation(pieces, currentPlayer));
                 if (king->getLegalMoves().contains(new Location{king_rank, 4 + i}) &&
                     !isCheckOn(pieces, new Location{king_rank, 4 + i * 2})) {
@@ -438,11 +470,17 @@ void Chess::expert_menu() {
 void Chess::save() {
     ofstream stream("prevState.sav", ios::binary | ios::out);
     if (stream.is_open()) {
-        int temp = (expertMode ? 1 : 0);
+        int temp = expertMode ? 1 : 0;
         binaryWriteInt(stream, temp);
-        temp = (isWhite ? 1 : 0);
+        temp = isWhite ? 1 : 0;
         binaryWriteInt(stream, temp);
-        binaryWriteInt(stream, (int &) timePassed);
+
+        binaryWriteInt(stream, mode);
+        binaryWriteInt(stream, reinterpret_cast<int &>(whiteType));
+        binaryWriteInt(stream, reinterpret_cast<int &>(blackType));
+        binaryWriteInt(stream, whitePower);
+        binaryWriteInt(stream, blackPower);
+        binaryWriteInt(stream, reinterpret_cast<int &>(timePassed));
         binaryWriteInt(stream, session);
         binaryWriteInt(stream, enPassantSession);
         binaryWriteInt(stream, whitePoints);
@@ -454,14 +492,14 @@ void Chess::save() {
         binaryWriteInt(stream, enPassantTo.rank);
         binaryWriteInt(stream, enPassantTo.file);
         for (bool i: castlingRule) {
-            temp = (i ? 1 : 0);
+            temp = i ? 1 : 0;
             binaryWriteInt(stream, temp);
         }
         for (int rank = 0; rank < 8; ++rank) {
             for (int file = 0; file < 8; ++file) {
                 Piece *piece = getPiece(pieces, {rank, file});
                 if (piece != nullptr) {
-                    temp = (piece->getColor() == P_WHITE ? 1 : 0);
+                    temp = piece->getColor() == P_WHITE ? 1 : 0;
                     binaryWriteInt(stream, temp);
                     temp = (int) piece->getType();
                     binaryWriteInt(stream, temp);
@@ -481,10 +519,17 @@ bool Chess::load() {
     if (stream.is_open()) {
         int data;
         binaryReadInt(stream, data);
-        expertMode = (data == 1);
+        expertMode = data == 1;
         binaryReadInt(stream, data);
-        currentPlayer = (data == 1) ? P_WHITE : P_BLACK;
-        isWhite = (currentPlayer == P_WHITE);
+        currentPlayer = data == 1 ? P_WHITE : P_BLACK;
+        isWhite = currentPlayer == P_WHITE;
+        binaryReadInt(stream, mode);
+        binaryReadInt(stream, data);
+        whiteType = static_cast<P_Type>(data);
+        binaryReadInt(stream, data);
+        blackType = static_cast<P_Type>(data);
+        binaryReadInt(stream, whitePower);
+        binaryReadInt(stream, blackPower);
         binaryReadInt(stream, data);
         timePassed = data;
         binaryReadInt(stream, session);
@@ -500,12 +545,12 @@ bool Chess::load() {
 
         for (bool &i: castlingRule) {
             binaryReadInt(stream, data);
-            i = (data == 1);
+            i = data == 1;
         }
         for (int rank = 0; rank < 8; ++rank) {
             for (int file = 0; file < 8; ++file) {
                 binaryReadInt(stream, data);
-                P_Color player = (data == 1) ? P_WHITE : P_BLACK;
+                P_Color player = data == 1 ? P_WHITE : P_BLACK;
                 binaryReadInt(stream, data);
 
                 if (data != -1) {
