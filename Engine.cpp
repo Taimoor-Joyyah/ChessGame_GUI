@@ -92,7 +92,7 @@ int Engine::evaluateBoard(GameState &gameState) {
         for (int col = 0; col < 8; col++) {
             Piece *piece = Chess::getPiece(gameState.pieces, {row, col});
             if (piece != nullptr) {
-                int value;
+                int value = 0;
                 switch (piece->getType()) {
                     case KING:
                         value = 200;
@@ -111,7 +111,7 @@ int Engine::evaluateBoard(GameState &gameState) {
                         value = 1;
                         break;
                 }
-                score += (piece->getColor() == P_WHITE) ? -value : value;
+                score += piece->getColor() == gameState.player ? value : -value;
             }
         }
     }
