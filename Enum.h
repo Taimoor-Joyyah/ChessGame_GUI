@@ -10,6 +10,11 @@ enum P_Color {
     P_BLACK
 };
 
+enum P_Type {
+    P_HUMAN,
+    P_CPU
+};
+
 enum PieceType {
     KING = 'K',
     QUEEN = 'Q',

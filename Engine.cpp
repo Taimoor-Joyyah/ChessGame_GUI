@@ -12,6 +12,10 @@ Move Engine::evaluateBestMove(Piece *pieces[8][8], P_Color player, int power) {
 
     std::vector<Move> allPossibleMoves = getAllPossibleMoves(gameState);
     int totalMoves = allPossibleMoves.size();
+
+    if (power == 0)
+        return allPossibleMoves[rand() % totalMoves];
+
     int scores[totalMoves];
 
     std::thread threads[totalMoves];
@@ -62,7 +66,6 @@ int Engine::minimax(GameState gameState, int depth, int alpha, int beta, bool is
     return evalualtion;
 }
 
-
 GameState Engine::movePiece(GameState *gameState, Move move) {
     GameState newState = {gameState->pieces, gameState->player};
     Piece *piece = Chess::getPiece(newState.pieces, move.fromLocation);
@@ -73,7 +76,6 @@ GameState Engine::movePiece(GameState *gameState, Move move) {
     return newState;
 }
 
-
 std::vector<Move> Engine::getAllPossibleMoves(GameState &gameState) {
     std::vector<Move> moves;
     for (Location position: gameState.getPieces(gameState.player)) {
@@ -82,9 +84,9 @@ std::vector<Move> Engine::getAllPossibleMoves(GameState &gameState) {
         for (int i = 0; i < validPositions.size(); ++i)
             moves.emplace_back(position, *validPositions.get(i));
     }
+
     return moves;
 }
-
 
 int Engine::evaluateBoard(GameState &gameState) {
     int score = 0;
