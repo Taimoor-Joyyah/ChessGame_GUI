@@ -194,7 +194,6 @@ int Engine::evaluateBoard(GameState &gameState) {
     return blackScore - whiteScore;
 }
 
-// TODO: add logic if statelemate
 bool Engine::isGameOver(GameState &state) {
     for (auto &pieceRow: state.pieces) {
         for (auto &piece: pieceRow) {
