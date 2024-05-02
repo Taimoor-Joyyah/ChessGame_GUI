@@ -20,7 +20,7 @@ class Chess {
 public:
     explicit Chess(bool isContinue);
 
-    Chess( bool isContinue, int mode, P_Type whiteType, P_Type blackType, int whitePower, int blackPower);
+    Chess(bool isContinue, int mode, P_Type whiteType, P_Type blackType, int whitePower, int blackPower);
 
     ~Chess();
 
@@ -53,7 +53,7 @@ public:
     Location enPassantTo{-1};
     int enPassantSession{};
 
-    bool castlingRule[6]{};// wlR, wK, wrR, blR, bK, brR // hasMoved
+    bool castlingRule[6]{}; // wlR, wK, wrR, blR, bK, brR // hasMoved
 
     bool loaded = true;
 
@@ -65,13 +65,10 @@ public:
     int whitePower = 0;
     int blackPower = 0;
 
-private:
-    static Location *getKingLocation(Piece *pieceList[8][8], P_Color player);
-
-public:
     static Piece *getPiece(Piece *pieces[8][8], const Location &cell);
 
     static void setPiece(Piece *pieces[8][8], const Location &cell, Piece *piece);
+
 private:
     void setupBoard();
 
@@ -115,13 +112,15 @@ private:
 
     void binaryReadInt(ifstream &stream, int &data) const;
 
-    // Rules Functions
-
-    bool isCheckOn(Piece *pieceList[8][8], Location *cell);
-
 public:
     static void getMoves(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating,
                          const int *session, const int *enPassantSession, Location *enPassantTo);
+
+    static Location *getKingLocation(Piece *pieceList[8][8], P_Color player);
+
+    static bool isCheckOn(Piece *pieceList[8][8], Location *cell, bool player, int *session, int *enPassantSession,
+                          Location *enPassantTo);
+
 private:
     static void
     addStraight(Piece *pieceList[8][8], const Location &cell, LinkedList<Location *> &moves, bool isSimulating);

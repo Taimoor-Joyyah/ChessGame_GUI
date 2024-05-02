@@ -8,6 +8,7 @@
 #include <algorithm>
 
 Move Engine::evaluateBestMove(Piece *pieces[8][8], P_Color player, int power) {
+    srand(time(nullptr));
     GameState gameState{pieces, player};
 
     std::vector<Move> allPossibleMoves = getAllPossibleMoves(gameState);
@@ -21,7 +22,10 @@ Move Engine::evaluateBestMove(Piece *pieces[8][8], P_Color player, int power) {
     std::thread threads[totalMoves];
     for (int i = 0; i < totalMoves; i++) {
         threads[i] = std::thread([&, i] {
+            Piece *piece = Chess::getPiece(gameState.pieces, allPossibleMoves[i].fromLocation);
+            PieceType type = piece->getType();
             scores[i] = minimax(movePiece(&gameState, allPossibleMoves[i]), power - 1, INT_MIN, INT_MAX, false);
+            piece->setType(type);
         });
     }
 
@@ -40,23 +44,36 @@ Move Engine::evaluateBestMove(Piece *pieces[8][8], P_Color player, int power) {
 }
 
 int Engine::minimax(GameState gameState, int depth, int alpha, int beta, bool isMaximizingPlayer) {
-    if (depth == 0 || isGameOver(gameState)) {
+    if (depth == 0 || isGameOver(gameState))
         return evaluateBoard(gameState);
-    }
 
     int evalualtion;
     if (isMaximizingPlayer) {
         evalualtion = INT_MIN;
-        for (Move move: getAllPossibleMoves(gameState)) {
+        auto allPossibleMoves = getAllPossibleMoves(gameState);
+        if (allPossibleMoves.empty())
+            return evaluateBoard(gameState);
+
+        for (Move move: allPossibleMoves) {
+            Piece *piece = Chess::getPiece(gameState.pieces, move.fromLocation);
+            PieceType type = piece->getType();
             int eval = minimax(movePiece(&gameState, move), depth - 1, alpha, beta, false);
+            piece->setType(type);
             evalualtion = std::max(evalualtion, eval);
             alpha = std::max(alpha, eval);
             if (beta <= alpha) break;
         }
     } else {
         evalualtion = INT_MAX;
-        for (Move move: getAllPossibleMoves(gameState)) {
+        auto allPossibleMoves = getAllPossibleMoves(gameState);
+        if (allPossibleMoves.empty())
+            return evaluateBoard(gameState);
+
+        for (Move move: allPossibleMoves) {
+            Piece *piece = Chess::getPiece(gameState.pieces, move.fromLocation);
+            PieceType type = piece->getType();
             int eval = minimax(movePiece(&gameState, move), depth - 1, alpha, beta, true);
+            piece->setType(type);
             evalualtion = std::min(evalualtion, eval);
             beta = std::min(beta, eval);
             if (beta <= alpha) break;
@@ -68,9 +85,41 @@ int Engine::minimax(GameState gameState, int depth, int alpha, int beta, bool is
 
 GameState Engine::movePiece(GameState *gameState, Move move) {
     GameState newState = {gameState->pieces, gameState->player};
-    Piece *piece = Chess::getPiece(newState.pieces, move.fromLocation);
+
+    Piece *fromPiece = Chess::getPiece(newState.pieces, move.fromLocation);
+    Piece *toPiece = Chess::getPiece(newState.pieces, move.toLocation);
+
+    Chess::setPiece(newState.pieces, move.toLocation, fromPiece);
     Chess::setPiece(newState.pieces, move.fromLocation, nullptr);
-    Chess::setPiece(newState.pieces, move.toLocation, piece);
+
+    // cover promotion
+    if (fromPiece->getType() == PAWN && (move.toLocation.rank == 0 || move.toLocation.rank == 7))
+        fromPiece->setType(QUEEN);
+
+    // cover castling
+    if (fromPiece->getType() == KING) {
+        if (move.fromLocation.equals(0, 4) && move.toLocation.equals(0, 6)) {
+            Chess::setPiece(newState.pieces, {0, 5}, Chess::getPiece(newState.pieces, {0, 7}));
+            Chess::setPiece(newState.pieces, {0, 7}, nullptr);
+        } else if (move.fromLocation.equals(0, 4) && move.toLocation.equals(0, 2)) {
+            Chess::setPiece(newState.pieces, {0, 3}, Chess::getPiece(newState.pieces, {0, 0}));
+            Chess::setPiece(newState.pieces, {0, 0}, nullptr);
+        } else if (move.fromLocation.equals(7, 4) && move.toLocation.equals(7, 6)) {
+            Chess::setPiece(newState.pieces, {7, 5}, Chess::getPiece(newState.pieces, {7, 7}));
+            Chess::setPiece(newState.pieces, {7, 7}, nullptr);
+        } else if (move.fromLocation.equals(7, 4) && move.toLocation.equals(7, 2)) {
+            Chess::setPiece(newState.pieces, {7, 3}, Chess::getPiece(newState.pieces, {7, 0}));
+            Chess::setPiece(newState.pieces, {7, 0}, nullptr);
+        }
+    }
+
+    // cover en passant
+    if (fromPiece->getType() == PAWN && toPiece == nullptr) {
+        int deltaFile = move.toLocation.file - move.fromLocation.file;
+
+        if (deltaFile != 0)
+            Chess::setPiece(newState.pieces, {move.fromLocation.rank, move.toLocation.file}, nullptr);
+    }
 
     newState.player = newState.player == P_WHITE ? P_BLACK : P_WHITE;
     return newState;
@@ -81,8 +130,24 @@ std::vector<Move> Engine::getAllPossibleMoves(GameState &gameState) {
     for (Location position: gameState.getPieces(gameState.player)) {
         LinkedList<Location *> validPositions{};
         Chess::getMoves(gameState.pieces, position, validPositions, false, nullptr, nullptr, nullptr);
-        for (int i = 0; i < validPositions.size(); ++i)
-            moves.emplace_back(position, *validPositions.get(i));
+        for (int i = 0; i < validPositions.size(); ++i) {
+            Location *location = validPositions.get(i);
+
+            // check if this move will cause king capture4
+            Move move{position, *location};
+            Piece *piece = Chess::getPiece(gameState.pieces, move.fromLocation);
+            PieceType type = piece->getType();
+            GameState newState = movePiece(&gameState, move);
+            if (Chess::isCheckOn(newState.pieces, Chess::getKingLocation(newState.pieces, gameState.player),
+                                 gameState.player == P_WHITE,
+                                 nullptr, nullptr, nullptr)) {
+                piece->setType(type);
+                continue;
+            }
+
+            piece->setType(type);
+            moves.emplace_back(position, *location);
+        }
     }
 
     return moves;
@@ -129,11 +194,12 @@ int Engine::evaluateBoard(GameState &gameState) {
     return blackScore - whiteScore;
 }
 
+// TODO: add logic if statelemate
 bool Engine::isGameOver(GameState &state) {
     for (auto &pieceRow: state.pieces) {
         for (auto &piece: pieceRow) {
             if (piece != nullptr && piece->getType() == KING &&
-                piece->getColor() == state.player)
+                piece->getColor() != state.player)
                 return false;
         }
     }

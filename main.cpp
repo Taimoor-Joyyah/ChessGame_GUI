@@ -18,7 +18,7 @@ int menuPower(int option) {
         case 3:
             return 3;
         case 4:
-            return 6;
+            return 5;
     }
 
     return 0;

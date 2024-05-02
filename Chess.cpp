@@ -11,6 +11,8 @@
 #include "raylib.h"
 #include "Engine.h"
 
+#define DEBUG false
+
 Chess::Chess(bool isContinue): Chess(isContinue, 0, P_HUMAN, P_CPU, 0, 0) {
 }
 
@@ -114,17 +116,19 @@ void Chess::startGame() {
     ChessWindow::game = this;
 
     if (mode == 1 &&
-            (currentPlayer == P_WHITE && whiteType == P_CPU ||
-             currentPlayer == P_BLACK && blackType == P_CPU) &&
-            !cpuMove()) {
-        usleep(1000000);
+        (currentPlayer == P_WHITE && whiteType == P_CPU ||
+         currentPlayer == P_BLACK && blackType == P_CPU) &&
+        !cpuMove()) {
+        if (!DEBUG)
+            usleep(1000000);
         ChessWindow::game = nullptr;
         return;
     }
 
     if (mode == 2) {
         while (true) {
-            usleep(2000000);
+            if (!DEBUG)
+                usleep(2000000);
             if (!cpuMove()) {
                 ChessWindow::game = nullptr;
                 return;
@@ -237,7 +241,8 @@ bool Chess::changePlayer() {
 
 bool Chess::updateStatus() {
     bool hasLegalMove = simulate();
-    bool isCheck = isCheckOn(pieces, getKingLocation(pieces, currentPlayer));
+    bool isCheck = isCheckOn(pieces, getKingLocation(pieces, currentPlayer), isWhite, &session, &enPassantSession,
+                             &enPassantTo);
     if (!isCheck)
         addIfCastling();
     if (!hasLegalMove) {
@@ -271,7 +276,8 @@ void Chess::addIfCastling() {
                      : getPiece(pieces, {king_rank, 1}) == getPiece(pieces, {king_rank, 2}))) {
                 Piece *king = getPiece(pieces, *getKingLocation(pieces, currentPlayer));
                 if (king->getLegalMoves().contains(new Location{king_rank, 4 + i}) &&
-                    !isCheckOn(pieces, new Location{king_rank, 4 + i * 2})) {
+                    !isCheckOn(pieces, new Location{king_rank, 4 + i * 2}, isWhite, &session, &enPassantSession,
+                               &enPassantTo)) {
                     king->getLegalMoves().insert(new Location{king_rank, 4 + i * 2});
                 }
             }
@@ -300,7 +306,8 @@ bool Chess::simulate() {
                     Location *move = moves.iteratorNext();
                     Piece *temp = tempPieces[move->rank][move->file];
                     tempPieces[move->rank][move->file] = piece;
-                    if (isCheckOn(tempPieces, getKingLocation(tempPieces, currentPlayer)))
+                    if (isCheckOn(tempPieces, getKingLocation(tempPieces, currentPlayer), isWhite, &session,
+                                  &enPassantSession, &enPassantTo))
                         moves.remove(move);
                     tempPieces[move->rank][move->file] = temp;
                 }
@@ -334,7 +341,8 @@ void Chess::move(Location &from, Location &to) {
     ChessWindow::animation = new ChessWindow::Animation{fromPiece, 30, from, to};
     setPiece(pieces, from, nullptr);
     setPiece(pieces, to, fromPiece);
-    usleep(500000);
+    if (!DEBUG)
+        usleep(500000);
 
     delete toPiece;
 }
@@ -379,6 +387,12 @@ void Chess::evaluateEnPassant(const Location &from, const Location &to) {
 
 void Chess::promotion(const Location &to, Piece *fromPiece) {
     if (isWhite ? to.rank == 0 : to.rank == 7) {
+        if (mode != 0 &&
+            (currentPlayer == P_WHITE && whiteType == P_CPU ||
+             currentPlayer == P_BLACK && blackType == P_CPU)) {
+            fromPiece->setType(QUEEN);
+            return;
+        }
         switch (promotionMenu.selectOption()) {
             case 0:
                 fromPiece->setType(QUEEN);

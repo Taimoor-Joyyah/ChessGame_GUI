@@ -102,13 +102,13 @@ Chess::addLocation(Piece *pieceList[8][8], int rank, int file, const Piece *curr
     return true;
 }
 
-bool Chess::isCheckOn(Piece *pieceList[8][8], Location *cell) {
+bool Chess::isCheckOn(Piece *pieceList[8][8], Location *cell, bool player, int *session, int *enPassantSession, Location *enPassantTo) {
     for (int rank = 0; rank < 8; ++rank)
         for (int file = 0; file < 8; ++file) {
             Piece *piece = pieceList[rank][file];
-            if (piece != nullptr && piece->getColor() == (isWhite ? P_BLACK : P_WHITE)) {
+            if (piece != nullptr && piece->getColor() == (player ? P_BLACK : P_WHITE)) {
                 LinkedList<Location *> list{};
-                getMoves(pieceList, {rank, file}, list, true, &session, &enPassantSession, &enPassantTo);
+                getMoves(pieceList, {rank, file}, list, true, session, enPassantSession, enPassantTo);
                 if (list.contains(cell))
                     return true;
             }
